@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<workspace>
+  <project>
+    <path>$WS_DIR$/dmm_zc_switch_remote_display_app_LP_CC2652RSIP_tirtos_iar.ewp</path>
+  </project>
+  <batchBuild>
+    <batchDefinition>
+      <name>dmm_zc_switch_remote_display_app</name>
+      <member>
+        <project>dmm_zc_switch_remote_display_app_LP_CC2652RSIP_tirtos_iar</project>
+        <configuration>Debug</configuration>
+      </member>
+    </batchDefinition>
+  </batchBuild>
+</workspace>
