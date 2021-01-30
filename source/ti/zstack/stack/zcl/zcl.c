@@ -4194,8 +4194,8 @@ static void *zclParseInWriteRspCmd( zclParseCmd_t *pCmd )
     if ( pCmd->dataLen == 1 )
     {
       // special case when all writes were successful
-      writeRspCmd->attrList[0].status = *pBuf;
-      writeRspCmd->attrList[0].attrID = ZCL_ATTR_ID_MAX; // all atrribute, fixed by luoyiming 2021-01-30
+      writeRspCmd->attrList[i].status = *pBuf;
+      writeRspCmd->attrList[i++].attrID = ZCL_ATTR_ID_MAX; // all atrribute, fixed by luoyiming 2021-01-30
     }
     else
     {
@@ -4376,6 +4376,7 @@ static void *zclParseInConfigReportRspCmd( zclParseCmd_t *pCmd )
     uint8_t i = 0;
     if ( pCmd->dataLen == 1 )
     {
+      cfgReportRspCmd->numAttr = numAttr;
       // special case when all writes were successful
       cfgReportRspCmd->attrList[0].status = *pBuf;
       cfgReportRspCmd->attrList[0].direction = 0xFF;          // all direction, fixed by luoyiming 2021-01-30
