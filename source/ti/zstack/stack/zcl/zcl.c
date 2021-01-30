@@ -4172,6 +4172,7 @@ static void *zclParseInWriteRspCmd( zclParseCmd_t *pCmd )
   zclWriteRspCmd_t *writeRspCmd;
   uint8_t *pBuf = pCmd->pData;
   uint8_t i = 0;
+  uint8_t tailLen = 0;
 
   // validate that the incoming payload is a valid size
   // if dataLen == 1, writes were successful
@@ -4182,14 +4183,19 @@ static void *zclParseInWriteRspCmd( zclParseCmd_t *pCmd )
   {
     return (void *)NULL;
   }
+  else if ( pCmd->dataLen == 1 )
+  {
+    tailLen = 2; //malloc attrList for dataLen == 1, add by luoyiming 2021-01-30
+  }
 
-  writeRspCmd = (zclWriteRspCmd_t *)zcl_mem_alloc( sizeof ( zclWriteRspCmd_t ) + pCmd->dataLen );
+  writeRspCmd = (zclWriteRspCmd_t *)zcl_mem_alloc( sizeof ( zclWriteRspCmd_t ) + pCmd->dataLen + tailLen );
   if ( writeRspCmd != NULL )
   {
     if ( pCmd->dataLen == 1 )
     {
       // special case when all writes were successful
       writeRspCmd->attrList[i++].status = *pBuf;
+      writeRspCmd->attrList[i++].attrID = ZCL_ATTR_ID_MAX; // all atrribute, fixed by luoyiming 2021-01-30
     }
     else
     {
@@ -4372,6 +4378,8 @@ static void *zclParseInConfigReportRspCmd( zclParseCmd_t *pCmd )
     {
       // special case when all writes were successful
       cfgReportRspCmd->attrList[i++].status = *pBuf;
+      cfgReportRspCmd->attrList[i].direction = 0xFF;          // all direction, fixed by luoyiming 2021-01-30
+      cfgReportRspCmd->attrList[i].attrID = ZCL_ATTR_ID_MAX;  // all atrribute, fixed by luoyiming 2021-01-30
     }
     else
     {
