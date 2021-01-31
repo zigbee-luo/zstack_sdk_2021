@@ -3645,7 +3645,7 @@ uint16_t zclGetAttrDataLength( uint8_t dataType, uint8_t *pData )
     // detect overflow
     if ( (uint16_t)(dataLen + 2) < (uint16_t)(dataLen) )
     {
-      dataLen = 0xFFFF; // UINT16_MAX
+      dataLen = UINT16_MAX;
     }
     else
     {

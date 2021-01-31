@@ -120,6 +120,44 @@ typedef uint32          halDataAlign_t;
 #define NULL 0L
 #endif
 
+// define INT8_MAX, INT8_MIN, UINT8_MAX
+#ifndef  INT8_MAX
+#define  INT8_MAX   0x7f
+#endif
+
+#ifndef  INT8_MIN
+#define  INT8_MIN   (-INT8_MAX-1)
+#endif
+
+#ifndef UINT8_MAX
+#define UINT8_MAX   0xff
+#endif
+
+// define INT16_MAX, INT16_MIN, UINT16_MAX
+#ifndef  INT16_MAX
+#define  INT16_MAX  0x7fff
+#endif
+
+#ifndef  INT16_MIN
+#define  INT16_MIN  (-INT16_MAX-1)
+#endif
+
+#ifndef UINT16_MAX
+#define UINT16_MAX  0xffff
+#endif
+
+// define INT32_MAX, INT32_MIN, UINT32_MAX
+#ifndef  INT32_MAX
+#define  INT32_MAX  0x7fffffff
+#endif
+
+#ifndef  INT32_MIN
+#define  INT32_MIN  (-INT32_MAX-1)
+#endif
+
+#ifndef UINT32_MAX
+#define UINT32_MAX  0xffffffff
+#endif
 
 /* ------------------------------------------------------------------------------------------------
  *                                       Memory Attributes
