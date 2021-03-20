@@ -135,6 +135,7 @@ typedef struct
 
 byte ZDP_SeqNum = 0;
 uint8_t childIndex = 0;
+extern const zdpSendCnf_t ZDP_NullSendCnf = { NULL, NULL };
 
 /*********************************************************************
  * EXTERNAL VARIABLES
@@ -278,12 +279,13 @@ static afStatus_t fillAndSend( uint8_t *transSeq, zAddrType_t *addr, cId_t clust
  * @param       dataLen - number of bytes of data
  * @param       data - pointer to the data
  * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  * @param       ackReq - Enable APS Ack Request
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_SendDataExt( uint8_t *TransSeq, zAddrType_t *dstAddr, uint16_t cmd,
-                           byte len, uint8_t *buf, byte SecurityEnable, bool ackReq )
+afStatus_t ZDP_SendDataExt( uint8_t *TransSeq, zAddrType_t *dstAddr, uint16_t cmd, byte len,
+                            uint8_t *buf, byte SecurityEnable, zdpSendCnf_t sendCnf, bool ackReq )
 {
   uint8_t *pBuf = ZDP_TmpBuf;
   byte cnt = len;
@@ -293,49 +295,14 @@ afStatus_t ZDP_SendDataExt( uint8_t *TransSeq, zAddrType_t *dstAddr, uint16_t cm
     *pBuf++ = *buf++;
   }
 
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
   //Enable APS Ack request for some ZDP command,added by Luoyiming
   FillAndSendTxOptions( TransSeq, dstAddr, cmd, len,
                        ((SecurityEnable) ? AF_EN_SECURITY : 0)
                          |((ackReq) ? AF_MSG_ACK_REQUEST : 0) );
-}
-
-/*********************************************************************
- * @fn          ZDP_SetSendConfirm
- *
- * @brief       Set a callback-function and it's paraments for 
- *              ZDP_SendData 's confirm
- *
- * @param       afCnfCB - confirm callback function
- * @param       afCnfParams - paraments for callback function
- *
-* @return      TRUE - success  FALSE - fail
- */
-bool ZDP_SetSendConfirm( pfnAfCnfCB afCnfCB, void* cnfParam )
-{
-  if((ZDP_afCnfCB == NULL)
-     && (ZDP_afCnfParam == NULL))
-  {
-    ZDP_afCnfCB = afCnfCB;
-    ZDP_afCnfParam = cnfParam;
-    return TRUE;
-  }
-  return FALSE;
-}
-
-/*********************************************************************
- * @fn          ZDP_ClearSendConfirm
- *
- * @brief       Clear callback-function and it's paraments for 
- *              ZDP_SendData 's confirm
- *
- * @param       NONE
- *
-* @return       TRUE - success  FALSE - fail
- */
-void ZDP_ClearSendConfirm( void )
-{
-  ZDP_afCnfCB = NULL;
-  ZDP_afCnfParam = NULL;
 }
 
 /*********************************************************************
@@ -374,7 +341,7 @@ void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg )
 }
 
 /*********************************************************************
- * @fn          ZDP_NWKAddrOfInterestReq
+ * @fn          ZDP_NWKAddrOfInterestReqExt
  *
  * @brief       This builds and send a request message that has
  *              NWKAddrOfInterest as its only parameter.
@@ -382,16 +349,21 @@ void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg )
  * @param       dstAddr - destination address
  * @param       nwkAddr - 16 bit address
  * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_NWKAddrOfInterestReq( zAddrType_t *dstAddr, uint16_t nwkAddr,
-                                     byte cmd, byte SecurityEnable )
+afStatus_t ZDP_NWKAddrOfInterestReqExt( zAddrType_t *dstAddr, uint16_t nwkAddr,
+                                        byte cmd, byte SecurityEnable, zdpSendCnf_t sendCnf )
 {
   (void)SecurityEnable;  // Intentionally unreferenced parameter
 
   ZDP_TmpBuf[0] = LO_UINT16( nwkAddr );
   ZDP_TmpBuf[1] = HI_UINT16( nwkAddr );
+
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
 
   return fillAndSend( &ZDP_SeqNum, dstAddr, cmd, 2 );
 }
@@ -401,7 +373,7 @@ afStatus_t ZDP_NWKAddrOfInterestReq( zAddrType_t *dstAddr, uint16_t nwkAddr,
  */
 
 /*********************************************************************
- * @fn          ZDP_NwkAddrReq
+ * @fn          ZDP_NwkAddrReqExt
  *
  * @brief       This builds and send a NWK_addr_req message.  This
  *              function sends a broadcast message looking for a 16
@@ -409,11 +381,12 @@ afStatus_t ZDP_NWKAddrOfInterestReq( zAddrType_t *dstAddr, uint16_t nwkAddr,
  *
  * @param       IEEEAddress - looking for this device
  * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_NwkAddrReq( uint8_t *IEEEAddress, byte ReqType,
-                           byte StartIndex, byte SecurityEnable )
+afStatus_t ZDP_NwkAddrReqExt( uint8_t *IEEEAddress, byte ReqType,
+                             byte StartIndex, byte SecurityEnable, zdpSendCnf_t sendCnf )
 {
   uint8_t *pBuf = ZDP_TmpBuf;
   byte len = Z_EXTADDR_LEN + 1 + 1;  // IEEEAddress + ReqType + StartIndex.
@@ -437,11 +410,33 @@ afStatus_t ZDP_NwkAddrReq( uint8_t *IEEEAddress, byte ReqType,
   *pBuf++ = ReqType;
   *pBuf++ = StartIndex;
 
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
   return fillAndSend( &ZDP_SeqNum, &dstAddr, NWK_addr_req, len );
 }
 
 /*********************************************************************
- * @fn          ZDP_IEEEAddrReq
+ * @fn          ZDP_NwkAddrReq
+ *
+ * @brief       This builds and send a NWK_addr_req message.  This
+ *              function sends a broadcast message looking for a 16
+ *              bit address with a 64 bit address as bait.
+ *
+ * @param       IEEEAddress - looking for this device
+ * @param       SecurityEnable - Security Options
+ *
+ * @return      afStatus_t
+ */
+afStatus_t ZDP_NwkAddrReq( uint8_t *IEEEAddress, byte ReqType,
+                           byte StartIndex, byte SecurityEnable )
+{
+  return ZDP_NwkAddrReqExt( IEEEAddress, ReqType, StartIndex, SecurityEnable, ZDP_NullSendCnf );
+}
+
+/*********************************************************************
+ * @fn          ZDP_IEEEAddrReqExt
  *
  * @brief       This builds and send a IEEE_addr_req message.  This
  *              function sends a unicast message looking for a 64
@@ -450,11 +445,12 @@ afStatus_t ZDP_NwkAddrReq( uint8_t *IEEEAddress, byte ReqType,
  * @param       ReqType - ZDP_IEEEADDR_REQTYPE_SINGLE or
  *                        ZDP_IEEEADDR_REQTYPE_EXTENDED
  * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_IEEEAddrReq( uint16_t shortAddr, byte ReqType,
-                            byte StartIndex, byte SecurityEnable )
+afStatus_t ZDP_IEEEAddrReqExt( uint16_t shortAddr, byte ReqType,
+                              byte StartIndex, byte SecurityEnable, zdpSendCnf_t sendCnf )
 {
   uint8_t *pBuf = ZDP_TmpBuf;
   byte len = 2 + 1 + 1;  // shortAddr + ReqType + StartIndex.
@@ -471,11 +467,15 @@ afStatus_t ZDP_IEEEAddrReq( uint16_t shortAddr, byte ReqType,
   *pBuf++ = ReqType;
   *pBuf++ = StartIndex;
 
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
   return fillAndSend( &ZDP_SeqNum, &dstAddr, IEEE_addr_req, len );
 }
 
 /*********************************************************************
- * @fn          ZDP_MatchDescReq
+ * @fn          ZDP_MatchDescReqExt
  *
  * @brief       This builds and send a Match_Desc_req message.  This
  *              function sends a broadcast or unicast message
@@ -490,14 +490,15 @@ afStatus_t ZDP_IEEEAddrReq( uint16_t shortAddr, byte ReqType,
  * @param       NumOutClusters - number of output clusters
  * @param       OutClusterList - output cluster ID list
  * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_MatchDescReq( zAddrType_t *dstAddr, uint16_t nwkAddr,
+afStatus_t ZDP_MatchDescReqExt( zAddrType_t *dstAddr, uint16_t nwkAddr,
                                 uint16_t ProfileID,
                                 byte NumInClusters, cId_t *InClusterList,
                                 byte NumOutClusters, cId_t *OutClusterList,
-                                byte SecurityEnable )
+                                byte SecurityEnable, zdpSendCnf_t sendCnf )
 {
   uint8_t *pBuf = ZDP_TmpBuf;
   // nwkAddr+ProfileID+NumInClusters+NumOutClusters.
@@ -550,11 +551,15 @@ afStatus_t ZDP_MatchDescReq( zAddrType_t *dstAddr, uint16_t nwkAddr,
     }
   }
 
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
   return fillAndSend( &ZDP_SeqNum, dstAddr, Match_Desc_req, len );
 }
 
 /*********************************************************************
- * @fn          ZDP_SimpleDescReq
+ * @fn          ZDP_SimpleDescReqExt
  *
  * @brief       This builds and send a NWK_Simple_Desc_req
  *              message.  This function sends unicast message to the
@@ -564,11 +569,12 @@ afStatus_t ZDP_MatchDescReq( zAddrType_t *dstAddr, uint16_t nwkAddr,
  * @param       nwkAddr - 16 bit address
  * @param       epIntf - endpoint/interface
  * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_SimpleDescReq( zAddrType_t *dstAddr, uint16_t nwkAddr,
-                                    byte endPoint, byte SecurityEnable )
+afStatus_t ZDP_SimpleDescReqExt( zAddrType_t *dstAddr, uint16_t nwkAddr,
+                                 byte endPoint, byte SecurityEnable, zdpSendCnf_t sendCnf )
 
 {
   (void)SecurityEnable;  // Intentionally unreferenced parameter
@@ -577,11 +583,15 @@ afStatus_t ZDP_SimpleDescReq( zAddrType_t *dstAddr, uint16_t nwkAddr,
   ZDP_TmpBuf[1] = HI_UINT16( nwkAddr );
   ZDP_TmpBuf[2] = endPoint;
 
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
   return fillAndSend( &ZDP_SeqNum, dstAddr, Simple_Desc_req, 3 );
 }
 
 /*********************************************************************
- * @fn          ZDP_UserDescSet
+ * @fn          ZDP_UserDescSetExt
  *
  * @brief       This builds and send a User_Desc_set message to set
  *              the user descriptor.  This function sends unicast
@@ -591,12 +601,13 @@ afStatus_t ZDP_SimpleDescReq( zAddrType_t *dstAddr, uint16_t nwkAddr,
  * @param       nwkAddr - 16 bit address
  * @param       UserDescriptor - user descriptor
  * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_UserDescSet( zAddrType_t *dstAddr, uint16_t nwkAddr,
-                          UserDescriptorFormat_t *UserDescriptor,
-                          byte SecurityEnable )
+afStatus_t ZDP_UserDescSetExt( zAddrType_t *dstAddr, uint16_t nwkAddr,
+                               UserDescriptorFormat_t *UserDescriptor,
+                               byte SecurityEnable, zdpSendCnf_t sendCnf )
 {
   uint8_t *pBuf = ZDP_TmpBuf;
   byte len = (UserDescriptor->len < AF_MAX_USER_DESCRIPTOR_LEN) ?
@@ -615,20 +626,25 @@ afStatus_t ZDP_UserDescSet( zAddrType_t *dstAddr, uint16_t nwkAddr,
 
   OsalPort_memcpy( pBuf, UserDescriptor->desc, len );
 
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
   return fillAndSend( &ZDP_SeqNum, dstAddr, User_Desc_set, (AF_MAX_USER_DESCRIPTOR_LEN + addrLen) );
 }
 
 /*********************************************************************
- * @fn          ZDP_ServerDiscReq
+ * @fn          ZDP_ServerDiscReqExt
  *
  * @brief       Build and send a Server_Discovery_req request message.
  *
  * @param       serverMask - 16-bit bit-mask of server services being sought.
  * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_ServerDiscReq( uint16_t serverMask, byte SecurityEnable )
+afStatus_t ZDP_ServerDiscReqExt( uint16_t serverMask, byte SecurityEnable, zdpSendCnf_t sendCnf )
 {
   uint8_t *pBuf = ZDP_TmpBuf;
   zAddrType_t dstAddr;
@@ -639,8 +655,53 @@ afStatus_t ZDP_ServerDiscReq( uint16_t serverMask, byte SecurityEnable )
   *pBuf++ = LO_UINT16( serverMask );
   *pBuf = HI_UINT16( serverMask );
 
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
   FillAndSendTxOptions( &ZDP_SeqNum, &dstAddr, Server_Discovery_req, 2,
              ((SecurityEnable) ? AF_EN_SECURITY : AF_TX_OPTIONS_NONE) );
+}
+
+/*********************************************************************
+ * @fn          ZDP_DeviceAnnceExt
+ *
+ * @brief       This builds and send a Device_Annce message.  This
+ *              function sends a broadcast message.
+ *
+ * @param       nwkAddr - 16 bit address of the device
+ * @param       IEEEAddr - 64 bit address of the device
+ * @param       capabilities - device capabilities.  This field is only
+ *                 sent for v1.1 networks.
+ * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
+ *
+ * @return      afStatus_t
+ */
+afStatus_t ZDP_DeviceAnnceEx( uint16_t nwkAddr, uint8_t *IEEEAddr,
+                               byte capabilities, byte SecurityEnable, zdpSendCnf_t sendCnf )
+{
+  zAddrType_t dstAddr;
+  uint8_t len;
+
+  (void)SecurityEnable;  // Intentionally unreferenced parameter
+
+  dstAddr.addrMode = (afAddrMode_t)AddrBroadcast;
+  dstAddr.addr.shortAddr = NWK_BROADCAST_SHORTADDR_DEVRXON;
+
+  ZDP_TmpBuf[0] = LO_UINT16( nwkAddr );
+  ZDP_TmpBuf[1] = HI_UINT16( nwkAddr );
+  osal_cpyExtAddr( &ZDP_TmpBuf[2], IEEEAddr );
+  len = 2 + Z_EXTADDR_LEN;
+
+  ZDP_TmpBuf[10] = capabilities;
+  len++;
+
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
+  return fillAndSend( &ZDP_SeqNum, &dstAddr, Device_annce, len );
 }
 
 /*********************************************************************
@@ -660,23 +721,7 @@ afStatus_t ZDP_ServerDiscReq( uint16_t serverMask, byte SecurityEnable )
 afStatus_t ZDP_DeviceAnnce( uint16_t nwkAddr, uint8_t *IEEEAddr,
                               byte capabilities, byte SecurityEnable )
 {
-  zAddrType_t dstAddr;
-  uint8_t len;
-
-  (void)SecurityEnable;  // Intentionally unreferenced parameter
-
-  dstAddr.addrMode = (afAddrMode_t)AddrBroadcast;
-  dstAddr.addr.shortAddr = NWK_BROADCAST_SHORTADDR_DEVRXON;
-
-  ZDP_TmpBuf[0] = LO_UINT16( nwkAddr );
-  ZDP_TmpBuf[1] = HI_UINT16( nwkAddr );
-  osal_cpyExtAddr( &ZDP_TmpBuf[2], IEEEAddr );
-  len = 2 + Z_EXTADDR_LEN;
-
-  ZDP_TmpBuf[10] = capabilities;
-  len++;
-
-  return fillAndSend( &ZDP_SeqNum, &dstAddr, Device_annce, len );
+  return ZDP_DeviceAnnceEx( nwkAddr, IEEEAddr, capabilities, SecurityEnable, ZDP_NullSendCnf );
 }
 
 /*********************************************************************
@@ -1268,7 +1313,7 @@ afStatus_t ZDP_GenericRsp( byte TransSeq, zAddrType_t *dstAddr,
  * Binding
  */
 /*********************************************************************
- * @fn          ZDP_EndDeviceBindReq
+ * @fn          ZDP_EndDeviceBindReqExt
  *
  * @brief       This builds and sends a End_Device_Bind_req message.
  *              This function sends a unicast message.
@@ -1289,16 +1334,17 @@ afStatus_t ZDP_GenericRsp( byte TransSeq, zAddrType_t *dstAddr,
  * @param       OutClusterList - output cluster ID list
  *
  * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_EndDeviceBindReq( zAddrType_t *dstAddr,
-                                 uint16_t LocalCoordinator,
-                                 byte endPoint,
-                                 uint16_t ProfileID,
-                                 byte NumInClusters, cId_t *InClusterList,
-                                 byte NumOutClusters, cId_t *OutClusterList,
-                                 byte SecurityEnable )
+afStatus_t ZDP_EndDeviceBindReqExt( zAddrType_t *dstAddr,
+                                    uint16_t LocalCoordinator,
+                                    byte endPoint,
+                                    uint16_t ProfileID,
+                                    byte NumInClusters, cId_t *InClusterList,
+                                    byte NumOutClusters, cId_t *OutClusterList,
+                                    byte SecurityEnable, zdpSendCnf_t sendCnf )
 {
   uint8_t *pBuf = ZDP_TmpBuf;
   uint8_t i, len;
@@ -1345,11 +1391,15 @@ afStatus_t ZDP_EndDeviceBindReq( zAddrType_t *dstAddr,
     *pBuf++ = HI_UINT16(OutClusterList[i]);
   }
 
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
   return fillAndSend( &ZDP_SeqNum, dstAddr, End_Device_Bind_req, len );
 }
 
 /*********************************************************************
- * @fn          ZDP_BindUnbindReq
+ * @fn          ZDP_BindUnbindReqExt
  *
  * @brief       This builds and send a Bind_req or Unbind_req message
  *              Depending on the ClusterID. This function
@@ -1363,14 +1413,15 @@ afStatus_t ZDP_EndDeviceBindReq( zAddrType_t *dstAddr,
  * @param       DestinationAddr - destination 64 bit addr of binding
  * @param       DstEPIntf - destination endpoint/interface
  * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_BindUnbindReq( uint16_t BindOrUnbind, zAddrType_t *dstAddr,
-                              uint8_t *SourceAddr, byte SrcEndPoint,
-                              cId_t ClusterID,
-                              zAddrType_t *destinationAddr, byte DstEndPoint,
-                              byte SecurityEnable )
+afStatus_t ZDP_BindUnbindReqExt( uint16_t BindOrUnbind, zAddrType_t *dstAddr,
+                                 uint8_t *SourceAddr, byte SrcEndPoint,
+                                 cId_t ClusterID,
+                                 zAddrType_t *destinationAddr, byte DstEndPoint,
+                                 byte SecurityEnable, zdpSendCnf_t sendCnf )
 {
   uint8_t *pBuf = ZDP_TmpBuf;
   byte len;
@@ -1402,6 +1453,10 @@ afStatus_t ZDP_BindUnbindReq( uint16_t BindOrUnbind, zAddrType_t *dstAddr,
     *pBuf++ = HI_UINT16( destinationAddr->addr.shortAddr );
   }
 
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
   FillAndSendTxOptions( &ZDP_SeqNum, dstAddr, BindOrUnbind, len, AF_MSG_ACK_REQUEST );
 }
 
@@ -1420,14 +1475,16 @@ afStatus_t ZDP_BindUnbindReq( uint16_t BindOrUnbind, zAddrType_t *dstAddr,
  * @param       StartIndex - Starting index within the reporting network
  *                           list
  * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_MgmtNwkDiscReq( zAddrType_t *dstAddr,
-                               uint32_t ScanChannels,
-                               byte ScanDuration,
-                               byte StartIndex,
-                               byte SecurityEnable )
+afStatus_t ZDP_MgmtNwkDiscReqExt( zAddrType_t *dstAddr,
+                                  uint32_t ScanChannels,
+                                  byte ScanDuration,
+                                  byte StartIndex,
+                                  byte SecurityEnable,
+                                  zdpSendCnf_t sendCnf )
 {
   uint8_t *pBuf = ZDP_TmpBuf;
   byte len = sizeof( uint32_t )+1+1;  // ScanChannels + ScanDuration + StartIndex.
@@ -1438,6 +1495,10 @@ afStatus_t ZDP_MgmtNwkDiscReq( zAddrType_t *dstAddr,
 
   *pBuf++ = ScanDuration;
   *pBuf = StartIndex;
+
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
 
   return fillAndSend( &ZDP_SeqNum, dstAddr, Mgmt_NWK_Disc_req, len );
 }
@@ -1451,35 +1512,43 @@ afStatus_t ZDP_MgmtNwkDiscReq( zAddrType_t *dstAddr,
  * @param       dstAddr - destination address of the message
  * @param       deviceAddr - 64 bit IEEE Address
  * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_MgmtDirectJoinReq( zAddrType_t *dstAddr,
-                               uint8_t *deviceAddr,
-                               byte capInfo,
-                               byte SecurityEnable )
+afStatus_t ZDP_MgmtDirectJoinReqExt( zAddrType_t *dstAddr,
+                                     uint8_t *deviceAddr,
+                                     byte capInfo,
+                                     byte SecurityEnable,
+                                     zdpSendCnf_t sendCnf )
 {
   (void)SecurityEnable;  // Intentionally unreferenced parameter
 
   osal_cpyExtAddr( ZDP_TmpBuf, deviceAddr );
   ZDP_TmpBuf[Z_EXTADDR_LEN] = capInfo;
 
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
   return fillAndSend( &ZDP_SeqNum, dstAddr, Mgmt_Direct_Join_req, (Z_EXTADDR_LEN + 1) );
 }
 
 /*********************************************************************
- * @fn          ZDP_MgmtPermitJoinReq
+ * @fn          ZDP_MgmtPermitJoinReqExt
  *
  * @brief       This builds and send a Mgmt_Permit_Join_req message.
  *
  * @param       dstAddr - destination address of the message
  * @param       duration - Permit duration
  * @param       TcSignificance - Trust Center Significance
+ * @param       SecurityEnable - Security Options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_MgmtPermitJoinReq( zAddrType_t *dstAddr, byte duration,
-                                  byte TcSignificance, byte SecurityEnable )
+afStatus_t ZDP_MgmtPermitJoinReqExt( zAddrType_t *dstAddr, byte duration,
+                                     byte TcSignificance, byte SecurityEnable, zdpSendCnf_t sendCnf )
 {
   (void)SecurityEnable;  // Intentionally unreferenced parameter
 
@@ -1506,13 +1575,17 @@ afStatus_t ZDP_MgmtPermitJoinReq( zAddrType_t *dstAddr, byte duration,
     }
   }
 
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
   // Send the message
   return fillAndSend( &ZDP_SeqNum, dstAddr, Mgmt_Permit_Join_req,
                       ZDP_MGMT_PERMIT_JOIN_REQ_SIZE );
 }
 
 /*********************************************************************
- * @fn          ZDP_MgmtLeaveReq
+ * @fn          ZDP_MgmtLeaveReqExt
  *
  * @brief       This builds and send a Mgmt_Leave_req message.
  *
@@ -1521,12 +1594,14 @@ afStatus_t ZDP_MgmtPermitJoinReq( zAddrType_t *dstAddr, byte duration,
  *              RemoveChildren - set to 1 to remove the children of the
  *                                device as well. 0 otherwise.
  *              Rejoin - set to 1 if the removed device should rejoin
-                         afterwards. 0 otherwise.
+ *                       afterwards. 0 otherwise.
+ *              SecurityEnable - Security Options
+ *              sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_MgmtLeaveReq( zAddrType_t *dstAddr, uint8_t *IEEEAddr, uint8_t RemoveChildren,
-                 uint8_t Rejoin, uint8_t SecurityEnable )
+afStatus_t ZDP_MgmtLeaveReqExt( zAddrType_t *dstAddr, uint8_t *IEEEAddr, uint8_t RemoveChildren,
+                 uint8_t Rejoin, uint8_t SecurityEnable, zdpSendCnf_t sendCnf )
 
 {
   (void)SecurityEnable;  // Intentionally unreferenced parameter
@@ -1543,11 +1618,15 @@ afStatus_t ZDP_MgmtLeaveReq( zAddrType_t *dstAddr, uint8_t *IEEEAddr, uint8_t Re
     ZDP_TmpBuf[Z_EXTADDR_LEN] |= ZDP_MGMT_LEAVE_REQ_REJOIN;
   }
 
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
+
   return fillAndSend( &ZDP_SeqNum, dstAddr, Mgmt_Leave_req, (Z_EXTADDR_LEN + 1) );
 }
 
 /*********************************************************************
- * @fn          ZDP_MgmtNwkUpdateReq
+ * @fn          ZDP_MgmtNwkUpdateReqExt
  *
  * @brief       This builds and send a Mgmt_NWK_Update_req message. This
  *              function sends a unicast or broadcast message.
@@ -1559,15 +1638,17 @@ afStatus_t ZDP_MgmtLeaveReq( zAddrType_t *dstAddr, uint8_t *IEEEAddr, uint8_t Re
  * @param       NwkUpdateId - NWk Update Id value
  * @param       NwkManagerAddr - NWK address for device with Network Manager
  *                               bit set in its Node Descriptor
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_MgmtNwkUpdateReq( zAddrType_t *dstAddr,
-                                 uint32_t ChannelMask,
-                                 uint8_t ScanDuration,
-                                 uint8_t ScanCount,
-                                 uint8_t NwkUpdateId,
-                                 uint16_t NwkManagerAddr )
+afStatus_t ZDP_MgmtNwkUpdateReqExt( zAddrType_t *dstAddr,
+                                    uint32_t ChannelMask,
+                                    uint8_t ScanDuration,
+                                    uint8_t ScanCount,
+                                    uint8_t NwkUpdateId,
+                                    uint16_t NwkManagerAddr,
+                                    zdpSendCnf_t sendCnf )
 {
   uint8_t *pBuf = ZDP_TmpBuf;
   byte len = sizeof( uint32_t ) + 1;  // ChannelMask + ScanDuration
@@ -1598,6 +1679,10 @@ afStatus_t ZDP_MgmtNwkUpdateReq( zAddrType_t *dstAddr,
       *pBuf++  = HI_UINT16( NwkManagerAddr );
     }
   }
+
+  // set send confirm callback
+  ZDP_afCnfCB = sendCnf.cnfCB;
+  ZDP_afCnfParam = sendCnf.param;
 
   return fillAndSend( &ZDP_SeqNum, dstAddr, Mgmt_NWK_Update_req, len );
 }
@@ -1941,7 +2026,7 @@ ZStatus_t ZDP_MgmtBindRsp( byte TransSeq, zAddrType_t *dstAddr,
 }
 
 /*********************************************************************
- * @fn          ZDP_MgmtNwkUpdateNotify
+ * @fn          ZDP_MgmtNwkUpdateNotifyExt
  *
  * @brief       This builds and send a Mgmt_NWK_Update_notify message. This
  *              function sends a unicast message.
@@ -1956,14 +2041,15 @@ ZStatus_t ZDP_MgmtBindRsp( byte TransSeq, zAddrType_t *dstAddr,
  *                             of the enegry detect descriptors
  * @param       txOptions - Transmit options
  * @param       securityEnable - Security options
+ * @param       sendCnf - Send Confirm Callback & Parameter
  *
  * @return      afStatus_t
  */
-afStatus_t ZDP_MgmtNwkUpdateNotify( uint8_t TransSeq, zAddrType_t *dstAddr,
-                                    uint8_t status, uint32_t scannedChannels,
-                                    uint16_t totalTransmissions, uint16_t transmissionFailures,
-                                    uint8_t listCount, uint8_t *energyValues, uint8_t txOptions,
-                                    uint8_t securityEnable )
+afStatus_t ZDP_MgmtNwkUpdateNotifyExt( uint8_t TransSeq, zAddrType_t *dstAddr,
+                                       uint8_t status, uint32_t scannedChannels,
+                                       uint16_t totalTransmissions, uint16_t transmissionFailures,
+                                       uint8_t listCount, uint8_t *energyValues, uint8_t txOptions,
+                                       uint8_t securityEnable, zdpSendCnf_t sendCnf )
 {
   uint8_t *buf;
   uint8_t *pBuf;

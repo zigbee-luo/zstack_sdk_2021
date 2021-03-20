@@ -7336,8 +7336,7 @@ static bool processAfDataReq( uint8_t srcServiceTaskId, void *pMsg )
             pPtr->hdr.status = (zstack_ZStatusValues)AF_DataRequestSrcRtgExt(
                   &dstAddr, pEPDesc, pPtr->pReq->clusterID, pPtr->pReq->n_payload,
                   pPtr->pReq->pPayload, transId, txOptions, pPtr->pReq->radius,
-                  pPtr->pReq->n_relayList, pList,
-                  pPtr->pReq->afCnfCB, pPtr->pReq->cnfParam );//fix by Luoyiming
+                  pPtr->pReq->n_relayList, pList, pPtr->pReq->afCnfCB, pPtr->pReq->cnfParam );//fix by Luoyiming
 
             OsalPort_free( pList );
           }
@@ -7352,8 +7351,7 @@ static bool processAfDataReq( uint8_t srcServiceTaskId, void *pMsg )
                 pEPDesc, pPtr->pReq->clusterID,
                 pPtr->pReq->n_payload,
                 pPtr->pReq->pPayload, transId,
-                txOptions,
-                pPtr->pReq->radius,
+                txOptions, pPtr->pReq->radius,
                 pPtr->pReq->afCnfCB, pPtr->pReq->cnfParam );//fix by Luoyiming
         }
       }
@@ -7393,9 +7391,10 @@ static bool processZdoNwkAddrReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_NwkAddrReq(
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_NwkAddrReqExt(
             pPtr->pReq->ieeeAddr, pPtr->pReq->type,
-            pPtr->pReq->startIndex, FALSE );
+            pPtr->pReq->startIndex, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -7434,9 +7433,10 @@ static bool processZdoIeeeAddrReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_IEEEAddrReq(
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_IEEEAddrReqExt(
             pPtr->pReq->nwkAddr, pPtr->pReq->type,
-            pPtr->pReq->startIndex, FALSE );
+            pPtr->pReq->startIndex, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -7480,8 +7480,9 @@ static bool processZdoNodeDescReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_NodeDescReq( &dstAddr,
-            pPtr->pReq->nwkAddrOfInterest, FALSE );
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_NodeDescReqExt( &dstAddr,
+            pPtr->pReq->nwkAddrOfInterest, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -7525,8 +7526,9 @@ static bool processZdoPowerDescReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_PowerDescReq( &dstAddr,
-            pPtr->pReq->nwkAddrOfInterest, FALSE );
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_PowerDescReqExt( &dstAddr,
+            pPtr->pReq->nwkAddrOfInterest, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -7570,9 +7572,10 @@ static bool processZdoSimpleDescReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_SimpleDescReq( &dstAddr,
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_SimpleDescReqExt( &dstAddr,
             pPtr->pReq->nwkAddrOfInterest,
-            pPtr->pReq->endpoint, FALSE );
+            pPtr->pReq->endpoint, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -7616,8 +7619,9 @@ static bool processZdoActiveEndpointsReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_ActiveEPReq( &dstAddr,
-            pPtr->pReq->nwkAddrOfInterest, FALSE );
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_ActiveEPReqExt( &dstAddr,
+            pPtr->pReq->nwkAddrOfInterest, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -7661,14 +7665,15 @@ static bool processZdoMatchDescReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MatchDescReq( &dstAddr,
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MatchDescReqExt( &dstAddr,
             pPtr->pReq->nwkAddrOfInterest,
             pPtr->pReq->profileID,
             pPtr->pReq->n_inputClusters,
             pPtr->pReq->pInputClusters,
             pPtr->pReq->n_outputClusters,
             pPtr->pReq->pOutputClusters,
-            FALSE );
+            FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -7712,9 +7717,10 @@ static bool processZdoComplexDescReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_ComplexDescReq( &dstAddr,
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_ComplexDescReqExt( &dstAddr,
             pPtr->pReq->nwkAddrOfInterest,
-            FALSE );
+            FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -7757,7 +7763,8 @@ static bool processZdoServerDiscReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_ServerDiscReq( serverMask, FALSE );
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_ServerDiscReqExt( serverMask, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -7801,7 +7808,8 @@ static bool processZdoEndDeviceBindReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_EndDeviceBindReq( &dstAddr,
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_EndDeviceBindReqExt( &dstAddr,
             pPtr->pReq->bindingTarget,
             pPtr->pReq->endpoint,
             pPtr->pReq->profileID,
@@ -7809,7 +7817,7 @@ static bool processZdoEndDeviceBindReq( uint8_t srcServiceTaskId, void *pMsg )
             pPtr->pReq->pInputClusters,
             pPtr->pReq->n_outputClusters,
             pPtr->pReq->pOutputClusters,
-            FALSE );
+            FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -7887,7 +7895,8 @@ static bool processZdoBindReq( uint8_t srcServiceTaskId, void *pMsg )
       zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
       if( zdpCnfParam )
       {
-        pPtr->hdr.status = (zstack_ZStatusValues)ZDP_BindUnbindReq(
+        zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+        pPtr->hdr.status = (zstack_ZStatusValues)ZDP_BindUnbindReqExt(
               Bind_req,
               &srcBindAddr,
               pPtr->pReq->bindInfo.srcAddr,
@@ -7897,7 +7906,7 @@ static bool processZdoBindReq( uint8_t srcServiceTaskId, void *pMsg )
               &remoteDevAddr,
               pPtr->pReq->bindInfo.dstAddr.
               endpoint,
-              FALSE );
+              FALSE, sendCnf );
         if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
         {
           //clear send param if send not success, fix at 2019-07-24
@@ -7956,14 +7965,15 @@ static bool processZdoUnbindReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_BindUnbindReq(
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_BindUnbindReqExt(
             Unbind_req,
             &srcBindAddr,
             pPtr->pReq->bindInfo.srcAddr,
             pPtr->pReq->bindInfo.srcEndpoint,
             (cId_t)pPtr->pReq->bindInfo.clusterID,
             &remoteDevAddr,
-            pPtr->pReq->bindInfo.dstAddr.endpoint, FALSE );
+            pPtr->pReq->bindInfo.dstAddr.endpoint, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -8007,9 +8017,10 @@ static bool processZdoMgmtNwkDiscReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtNwkDiscReq(
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtNwkDiscReqExt(
             &dstAddr, pPtr->pReq->scanChannels,
-            pPtr->pReq->scanDuration, pPtr->pReq->startIndex, FALSE );
+            pPtr->pReq->scanDuration, pPtr->pReq->startIndex, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -8053,8 +8064,9 @@ static bool processZdoMgmtLqiReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtLqiReq(
-            &dstAddr, pPtr->pReq->startIndex, FALSE );
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtLqiReqExt(
+            &dstAddr, pPtr->pReq->startIndex, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -8098,8 +8110,9 @@ static bool processZdoMgmtRtgReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtRtgReq(
-            &dstAddr, pPtr->pReq->startIndex, FALSE );
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtRtgReqExt(
+            &dstAddr, pPtr->pReq->startIndex, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -8143,8 +8156,9 @@ static bool processZdoMgmtBindReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtBindReq(
-            &dstAddr, pPtr->pReq->startIndex, FALSE );
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtBindReqExt(
+            &dstAddr, pPtr->pReq->startIndex, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -8188,11 +8202,11 @@ static bool processZdoMgmtLeaveReq( uint8_t srcServiceTaskId, void *pMsg )
     {
       // Send to self first
       dstAddr.addr.shortAddr = NLME_GetShortAddr( );
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtLeaveReq( &dstAddr,
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtLeaveReqExt( &dstAddr,
             pPtr->pReq->deviceAddress,
             pPtr->pReq->options.removeChildren,
             pPtr->pReq->options.rejoin,
-            FALSE );
+            FALSE, ZDP_NullSendCnf );
     }
 
     dstAddr.addr.shortAddr = pPtr->pReq->nwkAddr;
@@ -8202,11 +8216,12 @@ static bool processZdoMgmtLeaveReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtLeaveReq( &dstAddr,
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtLeaveReqExt( &dstAddr,
             pPtr->pReq->deviceAddress,
             pPtr->pReq->options.removeChildren,
             pPtr->pReq->options.rejoin,
-            FALSE );
+            FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -8253,10 +8268,9 @@ static bool processZdoMgmtDirectJoinReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtDirectJoinReq( &dstAddr,
-            pPtr->pReq->deviceAddress,
-            cInfo,
-            FALSE );
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtDirectJoinReqExt( &dstAddr,
+            pPtr->pReq->deviceAddress, cInfo, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -8301,10 +8315,11 @@ static bool processZdoMgmtPermitJoinReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtPermitJoinReq( &dstAddr,
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtPermitJoinReqExt( &dstAddr,
             pPtr->pReq->duration,
             pPtr->pReq->tcSignificance,
-            FALSE );
+            FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -8349,12 +8364,14 @@ static bool processZdoMgmtNwkUpdateReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtNwkUpdateReq( &dstAddr,
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_MgmtNwkUpdateReqExt( &dstAddr,
             pPtr->pReq->channelMask,
             pPtr->pReq->scanDuration,
             pPtr->pReq->scanCount,
             pPtr->pReq->nwkUpdateId,
-            pPtr->pReq->nwkMgrAddr );
+            pPtr->pReq->nwkMgrAddr,
+            sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -8397,8 +8414,9 @@ static bool processZdoDeviceAnnounceReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_DeviceAnnce(
-            pPtr->pReq->nwkAddr, pPtr->pReq->ieeeAddr, cInfo, FALSE );
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_DeviceAnnceEx(
+            pPtr->pReq->nwkAddr, pPtr->pReq->ieeeAddr, cInfo, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -8449,10 +8467,11 @@ static bool processZdoUserDescSetReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_UserDescSet( &dstAddr,
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_UserDescSetExt( &dstAddr,
             pPtr->pReq->nwkAddrOfInterest,
             &userDesc,
-            FALSE );
+            FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -8496,8 +8515,9 @@ static bool processZdoUserDescReq( uint8_t srcServiceTaskId, void *pMsg )
     zdpCnfParam_t* zdpCnfParam = setZdoExtParam( srcServiceTaskId, &pPtr->pReq->extParam );
     if( zdpCnfParam )
     {
-      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_UserDescReq( &dstAddr,
-            pPtr->pReq->nwkAddrOfInterest, FALSE );
+      zdpSendCnf_t sendCnf = { zdpSendComfirmCallback, zdpCnfParam }; // fixed by luoyiming 2021-03-18
+      pPtr->hdr.status = (zstack_ZStatusValues)ZDP_UserDescReqExt( &dstAddr,
+            pPtr->pReq->nwkAddrOfInterest, FALSE, sendCnf );
       if( pPtr->hdr.status != zstack_ZStatusValues_ZSuccess )
       {
         //clear send param if send not success, fix at 2019-07-24
@@ -10409,7 +10429,6 @@ static zdpCnfParam_t* setZdoExtParam( uint8_t srcServiceTaskId, zstack_zdoExtPar
       zdpCnfParam->srcServiceTaskId = srcServiceTaskId;
       zdpCnfParam->afCnfCB = pZdoExtParam->afCnfCB;
       zdpCnfParam->cnfParam = pZdoExtParam->cnfParam;
-      ZDP_SetSendConfirm( zdpSendComfirmCallback, zdpCnfParam ); //set send cnf param
       return zdpCnfParam;
     }
     OsalPort_free( zdpCnfParam );
