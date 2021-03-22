@@ -4242,7 +4242,7 @@ static void sendMgmtBindRspInd( uint16_t dstID, uint16_t srcAddr, void *pMsg )
     {
       OsalPort_memcpy( &(pItem->srcAddr), pBindRsp->list[x].srcAddr, Z_EXTADDR_LEN );
       pItem->srcEndpoint = pBindRsp->list[x].srcEP;
-      pItem->clustedID = pBindRsp->list[x].clusterID;
+      pItem->clusterID = pBindRsp->list[x].clusterID;
 
       pItem->dstAddr.addrMode
         = (zstack_AFAddrMode)pBindRsp->list[x].dstAddr.addrMode;

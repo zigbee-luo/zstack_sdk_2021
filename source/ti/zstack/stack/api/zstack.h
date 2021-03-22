@@ -744,7 +744,7 @@ typedef struct _zstack_binditem_t
     /** Source endpoint */
     uint8_t srcEndpoint;
     /** Cluster ID */
-    uint16_t clustedID;
+    uint16_t clusterID;
     /** Destination address */
     zstack_AFAddr_t dstAddr;
 } zstack_bindItem_t;
