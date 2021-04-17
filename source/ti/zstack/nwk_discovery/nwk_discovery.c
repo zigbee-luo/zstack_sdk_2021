@@ -321,6 +321,8 @@ NwkDiscovery_Status_t NwkDiscovery_start(void)
     /* Start discovery process by sending request to Coord */
     zdoMgmtLqiReq.nwkAddr = 0x0000;
     zdoMgmtLqiReq.startIndex = 0;
+    zdoMgmtLqiReq.extParam.afCnfCB = NULL;
+    zdoMgmtLqiReq.extParam.cnfParam = NULL;
     zstackStatus = Zstackapi_ZdoMgmtLqiReq( nwkDiscovery_params.appServiceTaskId ,
                              &zdoMgmtLqiReq);
 
@@ -519,6 +521,8 @@ NwkDiscovery_Status_t NwkDiscovery_processEvents(void)
                     /* Send device a MngtLqiReq */
                     zdoMgmtLqiReq.nwkAddr = pDeviceToDiscover->discoveredDevice.nwkAddr;
                     zdoMgmtLqiReq.startIndex = pDeviceToDiscover->discoveredDevice.neighborLqiEntriesReported;
+                    zdoMgmtLqiReq.extParam.afCnfCB = NULL;
+                    zdoMgmtLqiReq.extParam.cnfParam = NULL;
                     Zstackapi_ZdoMgmtLqiReq( nwkDiscovery_params.appServiceTaskId ,
                                              &zdoMgmtLqiReq);
                 }
@@ -533,6 +537,8 @@ NwkDiscovery_Status_t NwkDiscovery_processEvents(void)
                     zdoMatchDescReq.n_inputClusters = 1;
                     zdoMatchDescReq.pInputClusters = &cluster;
                     zdoMatchDescReq.profileID = ZCL_HA_PROFILE_ID;
+                    zdoMatchDescReq.extParam.afCnfCB = NULL;
+                    zdoMatchDescReq.extParam.cnfParam = NULL;
                     Zstackapi_ZdoMatchDescReq (nwkDiscovery_params.appServiceTaskId,
                                                               &zdoMatchDescReq);
                 }

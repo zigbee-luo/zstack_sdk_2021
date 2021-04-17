@@ -135,7 +135,7 @@ typedef struct
 
 byte ZDP_SeqNum = 0;
 uint8_t childIndex = 0;
-extern const zdpSendCnf_t ZDP_NullSendCnf = { NULL, NULL };
+const zdpSendCnf_t ZDP_NullSendCnf = { NULL, NULL };
 
 /*********************************************************************
  * EXTERNAL VARIABLES
@@ -162,7 +162,7 @@ void zdpProcessAddrReq( zdoIncomingMsg_t *inMsg );
 
 static uint8_t  ZDP_Buf[ ZDP_BUF_SZ ];
 static uint8_t *ZDP_TmpBuf = ZDP_Buf+1;
-static uint8_t  ZDP_TransID;
+static uint8_t ZDP_TransID = 0;
 static  pfnAfCnfCB ZDP_afCnfCB = NULL;
 static  void* ZDP_afCnfParam = NULL;
 
@@ -247,7 +247,7 @@ CONST zdpMsgProcItem_t zdpMsgProcs[] =
 static afStatus_t fillAndSend( uint8_t *transSeq, zAddrType_t *addr, cId_t clusterID, byte len )
 {
   afAddrType_t afAddr;
-  uint8_t status;
+  afStatus_t status = afStatus_FAILED;
 
   memset( &afAddr, 0, sizeof(afAddrType_t) );
   ZADDR_TO_AFADDR( addr, afAddr );
@@ -256,7 +256,7 @@ static afStatus_t fillAndSend( uint8_t *transSeq, zAddrType_t *addr, cId_t clust
 
   //Send ZDP command
   status = AF_DataRequestExt( &afAddr, &ZDApp_epDesc, clusterID, (uint16_t)(len+1), (uint8_t*)(ZDP_TmpBuf-1),
-                                  &ZDP_TransID, ZDP_TxOptions, AF_DEFAULT_RADIUS, ZDP_afCnfCB, ZDP_afCnfParam );
+                              &ZDP_TransID, ZDP_TxOptions, AF_DEFAULT_RADIUS, ZDP_afCnfCB, ZDP_afCnfParam );
   ZDP_afCnfCB = NULL;
   ZDP_afCnfParam = NULL;
 
@@ -386,7 +386,7 @@ afStatus_t ZDP_NWKAddrOfInterestReqExt( zAddrType_t *dstAddr, uint16_t nwkAddr,
  * @return      afStatus_t
  */
 afStatus_t ZDP_NwkAddrReqExt( uint8_t *IEEEAddress, byte ReqType,
-                             byte StartIndex, byte SecurityEnable, zdpSendCnf_t sendCnf )
+                              byte StartIndex, byte SecurityEnable, zdpSendCnf_t sendCnf )
 {
   uint8_t *pBuf = ZDP_TmpBuf;
   byte len = Z_EXTADDR_LEN + 1 + 1;  // IEEEAddress + ReqType + StartIndex.
@@ -450,7 +450,7 @@ afStatus_t ZDP_NwkAddrReq( uint8_t *IEEEAddress, byte ReqType,
  * @return      afStatus_t
  */
 afStatus_t ZDP_IEEEAddrReqExt( uint16_t shortAddr, byte ReqType,
-                              byte StartIndex, byte SecurityEnable, zdpSendCnf_t sendCnf )
+                               byte StartIndex, byte SecurityEnable, zdpSendCnf_t sendCnf )
 {
   uint8_t *pBuf = ZDP_TmpBuf;
   byte len = 2 + 1 + 1;  // shortAddr + ReqType + StartIndex.
