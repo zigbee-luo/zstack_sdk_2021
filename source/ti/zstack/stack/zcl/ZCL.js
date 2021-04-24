@@ -1001,7 +1001,7 @@ const ZCL =
 					{
 						"_id": "0x0004",
 						"_name": "ManufacturerName",
-						"_type": "uint8[]",
+						"_type": "const uint8[]",
 						"_zigbeetype": "ZCL_DATATYPE_CHAR_STR",
 						"_definition": "ATTRID_BASIC_MANUFACTURER_NAME ",
 						"_location": "zcl_general.h",
@@ -1014,7 +1014,7 @@ const ZCL =
 					{
 						"_id": "0x0005",
 						"_name": "ModelIdentifier",
-						"_type": "uint8[]",
+						"_type": "const uint8[]",
 						"_zigbeetype": "ZCL_DATATYPE_CHAR_STR",
 						"_definition": "ATTRID_BASIC_MODEL_IDENTIFIER ",
 						"_location": "zcl_general.h",
@@ -1027,7 +1027,7 @@ const ZCL =
 					{
 						"_id": "0x0006",
 						"_name": "DateCode",
-						"_type": "uint8[]",
+						"_type": "const uint8[]",
 						"_zigbeetype": "ZCL_DATATYPE_CHAR_STR",
 						"_definition": "ATTRID_BASIC_DATE_CODE ",
 						"_location": "zcl_general.h",
@@ -1216,7 +1216,7 @@ const ZCL =
 					{
 						"_id": "0x4000",
 						"_name": "SWBuildID",
-						"_type": "uint8[]",
+						"_type": "const uint8[]",
 						"_zigbeetype": "ZCL_DATATYPE_CHAR_STR",
 						"_definition": "ATTRID_BASIC_SW_BUILD_ID ",
 						"_location": "zcl_general.h",
