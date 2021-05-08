@@ -284,20 +284,12 @@ typedef struct
   uint16_t *outClusters;
 } ZDEndDeviceBind_t;
 
-// zdp send confirm callback & parameter, add by luoyiming 2021-03-18
-typedef struct
-{
-  pfnAfCnfCB cnfCB;
-  void* param;
-}zdpSendCnf_t;
-
 /*********************************************************************
  * GLOBAL VARIABLES
  */
 
 extern byte ZDP_SeqNum;
 extern byte ZDP_TxOptions;
-extern const zdpSendCnf_t ZDP_NullSendCnf;
 
 /*********************************************************************
  * MACROS
@@ -307,16 +299,16 @@ extern const zdpSendCnf_t ZDP_NullSendCnf;
  * Generic data send function
  */
 #define ZDP_SendData( transSeq, dstAddr, cmd, len, buf, SecurityEnable ) \
-          ZDP_SendDataExt( transSeq, dstAddr, cmd, len, buf, SecurityEnable, ZDP_NullSendCnf , false )
+          ZDP_SendDataExt( transSeq, dstAddr, cmd, len, buf, SecurityEnable, NULL, NULL, false )
 
-#define ZDP_SendDataCnf( transSeq, dstAddr, cmd, len, buf, SecurityEnable, sendCnf ) \
-          ZDP_SendDataExt( transSeq, dstAddr, cmd, len, buf, SecurityEnable, sendCnf , false )
+#define ZDP_SendDataCnf( transSeq, dstAddr, cmd, len, buf, SecurityEnable, cnfCB, param ) \
+          ZDP_SendDataExt( transSeq, dstAddr, cmd, len, buf, SecurityEnable, cnfCB, param , false )
 
-#define ZDP_SendDataAck( transSeq, dstAddr, cmd, len, buf, SecurityEnable ) \
-          ZDP_SendDataExt( transSeq, dstAddr, cmd, len, buf, SecurityEnable, ZDP_NullSendCnf , true )
+#define ZDP_SendDataWithAck( transSeq, dstAddr, cmd, len, buf, SecurityEnable ) \
+          ZDP_SendDataExt( transSeq, dstAddr, cmd, len, buf, SecurityEnable,  NULL, NULL , true )
 
-extern afStatus_t ZDP_SendDataExt( uint8_t *TransSeq, zAddrType_t *dstAddr, uint16_t cmd, byte len,
-                                   uint8_t *buf, byte SecurityEnable, zdpSendCnf_t sendCnf, bool ackReq );
+extern afStatus_t ZDP_SendDataExt( uint8_t *TransSeq, zAddrType_t *dstAddr, uint16_t cmd, byte len, uint8_t *buf,
+                                   byte SecurityEnable, pfnAfCnfCB cnfCB, void* param, bool ackReq );
 
 extern uint8_t ZDP_GetTransID( void );
 
@@ -326,7 +318,7 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
  * ZDP_NWKAddrOfInterestReq
  */
 #define ZDP_NWKAddrOfInterestReq( dstAddr, nwkAddr, cmd, SecurityEnable ) \
-    ZDP_NWKAddrOfInterestReqExt( dstAddr, nwkAddr, cmd, SecurityEnable, ZDP_NullSendCnf )
+    ZDP_NWKAddrOfInterestReqExt( dstAddr, nwkAddr, cmd, SecurityEnable,  NULL, NULL )
 
 /*
  * ZDP_NodeDescReq - Request a Node Description
@@ -340,8 +332,8 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
 #define ZDP_NodeDescReq( dstAddr, NWKAddrOfInterest, SecurityEnable ) \
   ZDP_NWKAddrOfInterestReq( dstAddr, NWKAddrOfInterest, Node_Desc_req, SecurityEnable )
 
-#define ZDP_NodeDescReqExt( dstAddr, NWKAddrOfInterest, SecurityEnable, sendCnf ) \
-  ZDP_NWKAddrOfInterestReqExt( dstAddr, NWKAddrOfInterest, Node_Desc_req, SecurityEnable, sendCnf )
+#define ZDP_NodeDescReqExt( dstAddr, NWKAddrOfInterest, SecurityEnable, cnfCB, param ) \
+  ZDP_NWKAddrOfInterestReqExt( dstAddr, NWKAddrOfInterest, Node_Desc_req, SecurityEnable, cnfCB, param )
 
 /*
  * ZDP_PowerDescReq - Request a Power Description
@@ -355,8 +347,8 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
 #define ZDP_PowerDescReq( dstAddr, NWKAddrOfInterest, SecurityEnable ) \
   ZDP_NWKAddrOfInterestReq( dstAddr, NWKAddrOfInterest, Power_Desc_req, SecurityEnable )
 
-#define ZDP_PowerDescReqExt( dstAddr, NWKAddrOfInterest, SecurityEnable, sendCnf ) \
-  ZDP_NWKAddrOfInterestReqExt( dstAddr, NWKAddrOfInterest, Power_Desc_req, SecurityEnable, sendCnf )
+#define ZDP_PowerDescReqExt( dstAddr, NWKAddrOfInterest, SecurityEnable, cnfCB, param ) \
+  ZDP_NWKAddrOfInterestReqExt( dstAddr, NWKAddrOfInterest, Power_Desc_req, SecurityEnable, cnfCB, param )
 
 /*
  * ZDP_ActiveEPReq - Request a device's endpoint list
@@ -370,8 +362,8 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
 #define ZDP_ActiveEPReq( dstAddr, NWKAddrOfInterest, SecurityEnable ) \
   ZDP_NWKAddrOfInterestReq( dstAddr, NWKAddrOfInterest, Active_EP_req, SecurityEnable )
 
-#define ZDP_ActiveEPReqExt( dstAddr, NWKAddrOfInterest, SecurityEnable, sendCnf ) \
-  ZDP_NWKAddrOfInterestReqExt( dstAddr, NWKAddrOfInterest, Active_EP_req, SecurityEnable, sendCnf )
+#define ZDP_ActiveEPReqExt( dstAddr, NWKAddrOfInterest, SecurityEnable, cnfCB, param ) \
+  ZDP_NWKAddrOfInterestReqExt( dstAddr, NWKAddrOfInterest, Active_EP_req, SecurityEnable, cnfCB, param )
 
 /*
  * ZDP_ComplexDescReq - Request a device's complex description
@@ -385,8 +377,8 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
 #define ZDP_ComplexDescReq( dstAddr, NWKAddrOfInterest, SecurityEnable ) \
   ZDP_NWKAddrOfInterestReq( dstAddr, NWKAddrOfInterest, Complex_Desc_req, SecurityEnable )
 
-#define ZDP_ComplexDescReqExt( dstAddr, NWKAddrOfInterest, SecurityEnable, sendCnf ) \
-  ZDP_NWKAddrOfInterestReqExt( dstAddr, NWKAddrOfInterest, Complex_Desc_req, SecurityEnable, sendCnf )
+#define ZDP_ComplexDescReqExt( dstAddr, NWKAddrOfInterest, SecurityEnable, cnfCB, param ) \
+  ZDP_NWKAddrOfInterestReqExt( dstAddr, NWKAddrOfInterest, Complex_Desc_req, SecurityEnable, cnfCB, param )
 
 /*
  * ZDP_UserDescReq - Request a device's user description
@@ -400,8 +392,8 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
 #define ZDP_UserDescReq( dstAddr, NWKAddrOfInterest, SecurityEnable ) \
   ZDP_NWKAddrOfInterestReq(  dstAddr, NWKAddrOfInterest, User_Desc_req, SecurityEnable )
 
-#define ZDP_UserDescReqExt( dstAddr, NWKAddrOfInterest, SecurityEnable, sendCnf ) \
-  ZDP_NWKAddrOfInterestReqExt(  dstAddr, NWKAddrOfInterest, User_Desc_req, SecurityEnable, sendCnf )
+#define ZDP_UserDescReqExt( dstAddr, NWKAddrOfInterest, SecurityEnable, cnfCB, param ) \
+  ZDP_NWKAddrOfInterestReqExt(  dstAddr, NWKAddrOfInterest, User_Desc_req, SecurityEnable, cnfCB, param )
 
 /*
  * ZDP_BindReq - bind request
@@ -420,7 +412,7 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
               ClusterID, DestinationAddr, DstEP, SecurityEnable ) \
                        ZDP_BindUnbindReqExt( Bind_req, dstAddr, \
                             SourceAddr, SrcEP, ClusterID, \
-                            DestinationAddr, DstEP, SecurityEnable, ZDP_NullSendCnf )
+                            DestinationAddr, DstEP, SecurityEnable,  NULL, NULL )
 
 /*
  * ZDP_UnbindReq - Unbind request
@@ -439,7 +431,7 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
               ClusterID, DestinationAddr, DstEP, SecurityEnable ) \
                        ZDP_BindUnbindReqExt( Unbind_req, dstAddr, \
                             SourceAddr, SrcEP, ClusterID, \
-                            DestinationAddr, DstEP, SecurityEnable, ZDP_NullSendCnf )
+                            DestinationAddr, DstEP, SecurityEnable,  NULL, NULL )
 
 /*
  * ZDP_MgmtLqiReq - Send a Management LQI Request
@@ -452,8 +444,8 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
 #define ZDP_MgmtLqiReq( dstAddr, StartIndex, SecurityEnable ) \
           ZDP_SendData( &ZDP_SeqNum, dstAddr, Mgmt_Lqi_req, 1, &StartIndex, SecurityEnable )
 
-#define ZDP_MgmtLqiReqExt( dstAddr, StartIndex, SecurityEnable, sendCnf ) \
-          ZDP_SendDataCnf( &ZDP_SeqNum, dstAddr, Mgmt_Lqi_req, 1, &StartIndex, SecurityEnable, sendCnf )
+#define ZDP_MgmtLqiReqExt( dstAddr, StartIndex, SecurityEnable, cnfCB, param ) \
+          ZDP_SendDataCnf( &ZDP_SeqNum, dstAddr, Mgmt_Lqi_req, 1, &StartIndex, SecurityEnable, cnfCB, param )
 
 /*
  * ZDP_MgmtRtgReq - Send a Management Routing Table Request
@@ -466,8 +458,8 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
 #define ZDP_MgmtRtgReq( dstAddr, StartIndex, SecurityEnable ) \
           ZDP_SendData( &ZDP_SeqNum, dstAddr, Mgmt_Rtg_req, 1, &StartIndex, SecurityEnable )
 
-#define ZDP_MgmtRtgReqExt( dstAddr, StartIndex, SecurityEnable, sendCnf ) \
-          ZDP_SendDataCnf( &ZDP_SeqNum, dstAddr, Mgmt_Rtg_req, 1, &StartIndex, SecurityEnable, sendCnf )
+#define ZDP_MgmtRtgReqExt( dstAddr, StartIndex, SecurityEnable, cnfCB, param ) \
+          ZDP_SendDataCnf( &ZDP_SeqNum, dstAddr, Mgmt_Rtg_req, 1, &StartIndex, SecurityEnable, cnfCB, param )
 
 /*
  * ZDP_MgmtBindReq - Send a Management Binding Table Request
@@ -480,8 +472,8 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
 #define ZDP_MgmtBindReq( dstAddr, StartIndex, SecurityEnable ) \
          ZDP_SendData( &ZDP_SeqNum, dstAddr, Mgmt_Bind_req, 1, &StartIndex, SecurityEnable )
 
-#define ZDP_MgmtBindReqExt( dstAddr, StartIndex, SecurityEnable, sendCnf ) \
-         ZDP_SendDataCnf( &ZDP_SeqNum, dstAddr, Mgmt_Bind_req, 1, &StartIndex, SecurityEnable, sendCnf )
+#define ZDP_MgmtBindReqExt( dstAddr, StartIndex, SecurityEnable, cnfCB, param ) \
+         ZDP_SendDataCnf( &ZDP_SeqNum, dstAddr, Mgmt_Bind_req, 1, &StartIndex, SecurityEnable, cnfCB, param )
 
 /*
  * ZDP_ParentAnnceReq - Send a ParentAnnce Request
@@ -522,37 +514,37 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
  * ZDP_EndDeviceBindRsp - Send a End Device Bind Response
  */
 #define ZDP_EndDeviceBindRsp( TransSeq, dstAddr, Status, SecurityEnable ) \
-       ZDP_SendDataAck( &TransSeq, dstAddr, End_Device_Bind_rsp, 1, &Status, SecurityEnable )
+       ZDP_SendDataWithAck( &TransSeq, dstAddr, End_Device_Bind_rsp, 1, &Status, SecurityEnable )
 
 /*
  * ZDP_BindRsp - Send a Bind Response
  */
 #define ZDP_BindRsp( TransSeq, dstAddr, Status, SecurityEnable ) \
-                  ZDP_SendDataAck( &TransSeq, dstAddr, Bind_rsp, 1, &Status, SecurityEnable )
+                  ZDP_SendDataWithAck( &TransSeq, dstAddr, Bind_rsp, 1, &Status, SecurityEnable )
 
 /*
  * ZDP_UnbindRsp - Send an Unbind Response
  */
 #define ZDP_UnbindRsp( TransSeq, dstAddr, Status, SecurityEnable ) \
-                ZDP_SendDataAck( &TransSeq, dstAddr, Unbind_rsp, 1, &Status, SecurityEnable )
+                ZDP_SendDataWithAck( &TransSeq, dstAddr, Unbind_rsp, 1, &Status, SecurityEnable )
 
 /*
  * ZDP_MgmtLeaveRsp - Send a Management Leave Response
  */
 #define ZDP_MgmtLeaveRsp( TransSeq, dstAddr, Status, SecurityEnable ) \
-            ZDP_SendDataAck( &TransSeq, dstAddr, Mgmt_Leave_rsp, 1, &Status, SecurityEnable )
+            ZDP_SendDataWithAck( &TransSeq, dstAddr, Mgmt_Leave_rsp, 1, &Status, SecurityEnable )
 
 /*
  * ZDP_MgmtPermitJoinRsp - Send a Management Permit Join Response
  */
 #define ZDP_MgmtPermitJoinRsp( TransSeq, dstAddr, Status, SecurityEnable ) \
-      ZDP_SendDataAck( &TransSeq, dstAddr, Mgmt_Permit_Join_rsp, 1, &Status, SecurityEnable )
+      ZDP_SendDataWithAck( &TransSeq, dstAddr, Mgmt_Permit_Join_rsp, 1, &Status, SecurityEnable )
 
 /*
  * ZDP_MgmtDirectJoinRsp - Send a Mgmt_DirectJoining_Rsp Response
  */
 #define ZDP_MgmtDirectJoinRsp( TransSeq, dstAddr, Status, SecurityEnable ) \
-      ZDP_SendDataAck( &TransSeq, dstAddr, Mgmt_Direct_Join_rsp, 1, &Status, SecurityEnable )
+      ZDP_SendDataWithAck( &TransSeq, dstAddr, Mgmt_Direct_Join_rsp, 1, &Status, SecurityEnable )
 
 /*
  * ZDP_ParentAnnceRsp - Send a ParentAnnceRsp Response
@@ -568,8 +560,8 @@ extern void ZDP_ProcessDataConfirm( afDataConfirm_t* pMsg );
 /*
  * ZDP_NWKAddrOfInterestReq - Send request with NWKAddrOfInterest as parameter
  */
-extern afStatus_t ZDP_NWKAddrOfInterestReqExt( zAddrType_t *dstAddr, uint16_t nwkAddr,
-                                               byte cmd, byte SecurityEnable, zdpSendCnf_t sendCnf );
+extern afStatus_t ZDP_NWKAddrOfInterestReqExt( zAddrType_t *dstAddr, uint16_t nwkAddr, byte cmd,
+                                               byte SecurityEnable, pfnAfCnfCB cnfCB, void* param );
 /*
  * ZDP_NwkAddrReq - Request a Network address
  *
@@ -580,8 +572,8 @@ extern afStatus_t ZDP_NWKAddrOfInterestReqExt( zAddrType_t *dstAddr, uint16_t nw
  *  byte SecurityEnable)
  *
  */
-extern afStatus_t ZDP_NwkAddrReqExt( uint8_t *IEEEAddress, byte ReqType,
-                                     byte StartIndex, byte SecurityEnable, zdpSendCnf_t sendCnf );
+extern afStatus_t ZDP_NwkAddrReqExt( uint8_t *IEEEAddress, byte ReqType, byte StartIndex,
+                                     byte SecurityEnable, pfnAfCnfCB cnfCB, void* param );
 
 extern afStatus_t ZDP_NwkAddrReq( uint8_t *IEEEAddress, byte ReqType, byte StartIndex, byte SecurityEnable);
 
@@ -596,10 +588,10 @@ extern afStatus_t ZDP_NwkAddrReq( uint8_t *IEEEAddress, byte ReqType, byte Start
  *
  */
 #define ZDP_IEEEAddrReq(shortAddr, ReqType, StartIndex, SecurityEnable) \
-    ZDP_IEEEAddrReqExt(shortAddr, ReqType, StartIndex, SecurityEnable, ZDP_NullSendCnf)
+    ZDP_IEEEAddrReqExt(shortAddr, ReqType, StartIndex, SecurityEnable,  NULL, NULL)
 
-extern afStatus_t ZDP_IEEEAddrReqExt( uint16_t shortAddr, byte ReqType,
-                                     byte StartIndex, byte SecurityEnable, zdpSendCnf_t sendCnf );
+extern afStatus_t ZDP_IEEEAddrReqExt( uint16_t shortAddr, byte ReqType, byte StartIndex,
+                                      byte SecurityEnable, pfnAfCnfCB cnfCB, void* param );
 
 /*
  * ZDP_MatchDescReq - Request matching device's endpoint list
@@ -616,13 +608,13 @@ extern afStatus_t ZDP_IEEEAddrReqExt( uint16_t shortAddr, byte ReqType,
  *
  */
 #define ZDP_MatchDescReq(dst, nwk, pid, numIn, inCid, numOut, outCid, sec) \
-    ZDP_MatchDescReqExt(dst, nwk, pid, numIn, inCid, numOut, outCid, sec, ZDP_NullSendCnf)
+    ZDP_MatchDescReqExt(dst, nwk, pid, numIn, inCid, numOut, outCid, sec,  NULL, NULL)
 
 extern afStatus_t ZDP_MatchDescReqExt( zAddrType_t *dstAddr, uint16_t nwkAddr,
                                        uint16_t ProfileID,
                                        byte NumInClusters, uint16_t *InClusterList,
                                        byte NumOutClusters, uint16_t *OutClusterList,
-                                       byte SecurityEnable, zdpSendCnf_t sendCnf );
+                                       byte SecurityEnable, pfnAfCnfCB cnfCB, void* param );
 
 /*
  * ZDP_SimpleDescReq - Request Simple Descriptor
@@ -635,10 +627,10 @@ extern afStatus_t ZDP_MatchDescReqExt( zAddrType_t *dstAddr, uint16_t nwkAddr,
  *
  */
 #define ZDP_SimpleDescReq(dst, nwk, ep, sec) \
-    ZDP_SimpleDescReqExt(dst, nwk, ep, sec, ZDP_NullSendCnf)
+    ZDP_SimpleDescReqExt(dst, nwk, ep, sec,  NULL, NULL)
 
-extern afStatus_t ZDP_SimpleDescReqExt( zAddrType_t *dstAddr, uint16_t nwkAddr,
-                                        byte ep, byte SecurityEnable, zdpSendCnf_t sendCnf );
+extern afStatus_t ZDP_SimpleDescReqExt( zAddrType_t *dstAddr, uint16_t nwkAddr, byte ep,
+                                        byte SecurityEnable, pfnAfCnfCB cnfCB, void* param );
 
 /*
  * ZDP_UserDescSet - Set the User Descriptor
@@ -652,19 +644,19 @@ extern afStatus_t ZDP_SimpleDescReqExt( zAddrType_t *dstAddr, uint16_t nwkAddr,
  *
  */
 #define ZDP_UserDescSet(dst, nwk, usr, sec) \
-    ZDP_UserDescSetExt(dst, nwk, usr, sec, ZDP_NullSendCnf)
+    ZDP_UserDescSetExt(dst, nwk, usr, sec,  NULL, NULL)
 
 extern afStatus_t ZDP_UserDescSetExt( zAddrType_t *dstAddr, uint16_t nwkAddr,
                                       UserDescriptorFormat_t *UserDescriptor,
-                                      byte SecurityEnable, zdpSendCnf_t sendCnf );
+                                      byte SecurityEnable, pfnAfCnfCB cnfCB, void* param );
 
 /*
  * ZDP_ServerDiscReq - Build and send a Server_Discovery_req request message.
  */
 #define ZDP_ServerDiscReq( serverMask, SecurityEnable ) \
-    ZDP_ServerDiscReqExt( serverMask, SecurityEnable, ZDP_NullSendCnf )
+    ZDP_ServerDiscReqExt( serverMask, SecurityEnable,  NULL, NULL )
 
-afStatus_t ZDP_ServerDiscReqExt( uint16_t serverMask, byte SecurityEnable, zdpSendCnf_t sendCnf );
+afStatus_t ZDP_ServerDiscReqExt( uint16_t serverMask, byte SecurityEnable, pfnAfCnfCB cnfCB, void* param );
 
 /*
  * ZDP_DeviceAnnce - Device Announce
@@ -675,8 +667,8 @@ afStatus_t ZDP_ServerDiscReqExt( uint16_t serverMask, byte SecurityEnable, zdpSe
  *  byte SecuritySuite)
  *
  */
-extern afStatus_t ZDP_DeviceAnnceEx( uint16_t nwkAddr, uint8_t *IEEEAddr,
-                         byte capabilities, byte SecurityEnable, zdpSendCnf_t sendCnf );
+extern afStatus_t ZDP_DeviceAnnceEx( uint16_t nwkAddr, uint8_t *IEEEAddr, byte capabilities,
+                                     byte SecurityEnable, pfnAfCnfCB cnfCB, void* param );
 
 extern afStatus_t ZDP_DeviceAnnce( uint16_t nwkAddr, uint8_t *IEEEAddr, byte capabilities, byte SecurityEnable );
 
@@ -706,7 +698,7 @@ extern afStatus_t ZDP_ParentAnnce( uint8_t *TransSeq,
  *
  */
 #define ZDP_EndDeviceBindReq(dst, loccal, ep, pid, numIn, inCid, numOut, outCid, sec) \
-    ZDP_EndDeviceBindReqExt(dst, loccal, ep, pid, numIn, inCid, numOut, outCid, sec, ZDP_NullSendCnf)
+    ZDP_EndDeviceBindReqExt(dst, loccal, ep, pid, numIn, inCid, numOut, outCid, sec,  NULL, NULL)
 
 extern afStatus_t ZDP_EndDeviceBindReqExt( zAddrType_t *dstAddr,
                                            uint16_t LocalCoordinator,
@@ -714,19 +706,19 @@ extern afStatus_t ZDP_EndDeviceBindReqExt( zAddrType_t *dstAddr,
                                            uint16_t ProfileID,
                                            byte NumInClusters, uint16_t *InClusterList,
                                            byte NumOutClusters, uint16_t *OutClusterList,
-                                           byte SecurityEnable, zdpSendCnf_t sendCnf );
+                                           byte SecurityEnable, pfnAfCnfCB cnfCB, void* param );
 
 /*
  * ZDP_BindUnbindReq - bind request
  */
 #define ZDP_BindUnbindReq(cmd, dst, bsrc, bsep, cid, bdst, bdep, sec) \
-    ZDP_BindUnbindReqExt(cmd, dst, bsrc, bsep, cid, bdst, bdep, sec, ZDP_NullSendCnf)
+    ZDP_BindUnbindReqExt(cmd, dst, bsrc, bsep, cid, bdst, bdep, sec,  NULL, NULL)
 
 extern afStatus_t ZDP_BindUnbindReqExt( uint16_t BindOrUnbind, zAddrType_t *dstAddr,
                                         uint8_t *SourceAddr, byte SrcEP,
                                         cId_t  ClusterID,
                                         zAddrType_t *DestinationAddr, byte DstEP,
-                                        byte SecurityEnable, zdpSendCnf_t sendCnf );
+                                        byte SecurityEnable, pfnAfCnfCB cnfCB, void* param );
 
 /*
  * ZDP_MgmtNwkDiscReq - Send a Management Network Discovery Request
@@ -738,14 +730,15 @@ extern afStatus_t ZDP_BindUnbindReqExt( uint16_t BindOrUnbind, zAddrType_t *dstA
  *
  */
 #define ZDP_MgmtNwkDiscReq(dst, chn, drt, sidx, sec) \
-    ZDP_MgmtNwkDiscReqExt(dst, chn, drt, sidx, sec, ZDP_NullSendCnf)
+    ZDP_MgmtNwkDiscReqExt(dst, chn, drt, sidx, sec,  NULL, NULL)
 
 extern afStatus_t ZDP_MgmtNwkDiscReqExt( zAddrType_t *dstAddr,
                                          uint32_t ScanChannels,
                                          byte ScanDuration,
                                          byte StartIndex,
                                          byte SecurityEnable,
-                                         zdpSendCnf_t sendCnf );
+                                         pfnAfCnfCB cnfCB,
+                                         void* param );
 
 /*
  * ZDP_MgmtDirectJoinReq - Send a Management Direct Join Request
@@ -757,13 +750,14 @@ extern afStatus_t ZDP_MgmtNwkDiscReqExt( zAddrType_t *dstAddr,
  *
  */
 #define ZDP_MgmtDirectJoinReq(dst, div, cap, sec) \
-    ZDP_MgmtDirectJoinReqExt(dst, div, cap, sec, ZDP_NullSendCnf)
+    ZDP_MgmtDirectJoinReqExt(dst, div, cap, sec,  NULL, NULL)
 
 extern afStatus_t ZDP_MgmtDirectJoinReqExt( zAddrType_t *dstAddr,
                                             uint8_t *deviceAddr,
                                             byte capInfo,
                                             byte SecurityEnable,
-                                            zdpSendCnf_t sendCnf );
+                                            pfnAfCnfCB cnfCB,
+                                            void* param );
 
 /*
  * ZDP_MgmtLeaveReq - Send a Management Leave Request
@@ -776,14 +770,15 @@ extern afStatus_t ZDP_MgmtDirectJoinReqExt( zAddrType_t *dstAddr,
  *  uint8_t SecurityEnable)
  */
 #define ZDP_MgmtLeaveReq(dst, ieee, rmv, rjn, sec) \
-    ZDP_MgmtLeaveReqExt(dst, ieee, rmv, rjn, sec, ZDP_NullSendCnf)
+    ZDP_MgmtLeaveReqExt(dst, ieee, rmv, rjn, sec,  NULL, NULL)
 
 extern afStatus_t ZDP_MgmtLeaveReqExt( zAddrType_t *dstAddr,
                                        uint8_t *IEEEAddr,
                                        uint8_t RemoveChildren,
                                        uint8_t Rejoin,
                                        uint8_t SecurityEnable,
-                                       zdpSendCnf_t sendCnf );
+                                       pfnAfCnfCB cnfCB,
+                                       void* param );
 /*
  * ZDP_MgmtPermitJoinReq - Send a Management Permit Join Request
  *
@@ -794,13 +789,14 @@ extern afStatus_t ZDP_MgmtLeaveReqExt( zAddrType_t *dstAddr,
  *
  */
 #define ZDP_MgmtPermitJoinReq(dst, drt, tc, sec) \
-    ZDP_MgmtPermitJoinReqExt(dst, drt, tc, sec, ZDP_NullSendCnf)
+    ZDP_MgmtPermitJoinReqExt(dst, drt, tc, sec,  NULL, NULL)
 
 extern afStatus_t ZDP_MgmtPermitJoinReqExt( zAddrType_t *dstAddr,
                                             byte duration,
                                             byte TcSignificance,
                                             byte SecurityEnable,
-                                            zdpSendCnf_t sendCnf );
+                                            pfnAfCnfCB cnfCB,
+                                            void* param );
 
 /*
  * ZDP_MgmtNwkUpdateReq - Send a Management NWK Update Request
@@ -814,7 +810,7 @@ extern afStatus_t ZDP_MgmtPermitJoinReqExt( zAddrType_t *dstAddr,
  *
  */
 #define ZDP_MgmtNwkUpdateReq(dst, chn, drt, cnt, upid, nmg) \
-    ZDP_MgmtNwkUpdateReqExt(dst, chn, drt, cnt, upid, nmg, ZDP_NullSendCnf)
+    ZDP_MgmtNwkUpdateReqExt(dst, chn, drt, cnt, upid, nmg,  NULL, NULL)
 
 extern afStatus_t ZDP_MgmtNwkUpdateReqExt( zAddrType_t *dstAddr,
                                            uint32_t ChannelMask,
@@ -822,7 +818,8 @@ extern afStatus_t ZDP_MgmtNwkUpdateReqExt( zAddrType_t *dstAddr,
                                            uint8_t ScanCount,
                                            uint8_t NwkUpdateId,
                                            uint16_t NwkManagerAddr,
-                                           zdpSendCnf_t sendCnf );
+                                           pfnAfCnfCB cnfCB,
+                                           void* param );
 
 /*********************************************************************
  * @fn      ZDP_AddrRsp
@@ -926,13 +923,13 @@ extern ZStatus_t ZDP_MgmtBindRsp( byte TransSeq, zAddrType_t *dstAddr,
  * ZDP_MgmtNwkUpdateNotify - Sends the Management Netwotk Update Notify.
  */
 #define ZDP_MgmtNwkUpdateNotify(seq, dst, st, chn, ttl, fail, cnt, eng, opt, sec) \
-    ZDP_MgmtNwkUpdateNotifyExt(seq, dst, st, chn, ttl, fail, cnt, eng, opt, sec, ZDP_NullSendCnf )
+    ZDP_MgmtNwkUpdateNotifyExt(seq, dst, st, chn, ttl, fail, cnt, eng, opt, sec,  NULL, NULL )
 
 extern afStatus_t ZDP_MgmtNwkUpdateNotifyExt( uint8_t TransSeq, zAddrType_t *dstAddr,
                                               uint8_t status, uint32_t scannedChannels,
                                               uint16_t totalTransmissions, uint16_t transmissionFailures,
                                               uint8_t listCount, uint8_t *energyValues, uint8_t txOptions,
-                                              uint8_t securityEnable, zdpSendCnf_t sendCnf );
+                                              uint8_t securityEnable, pfnAfCnfCB cnfCB, void* param );
 
 /*
  * ZDP_UserDescRsp - Sends the user descriptor response message.

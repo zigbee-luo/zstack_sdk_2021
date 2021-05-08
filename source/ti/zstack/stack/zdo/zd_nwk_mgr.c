@@ -145,11 +145,11 @@ static void ZDNwkMgr_ProcessEDScanConfirm( ZDNwkMgr_EDScanConfirm_t *pEDScanConf
 static void ZDNwkMgr_CheckForChannelInterference( ZDNwkMgr_EDScanConfirm_t *pEDScanConfirm );
 
 #define ZDNwkMgr_BuildAndSendUpdateNotify(seq, dst, ttl, fail, scan, opt) \
-    ZDNwkMgr_BuildAndSendUpdateNotifyExt(seq, dst, ttl, fail, scan, opt, ZDP_NullSendCnf)
+    ZDNwkMgr_BuildAndSendUpdateNotifyExt(seq, dst, ttl, fail, scan, opt,  NULL, NULL)
 
 static void ZDNwkMgr_BuildAndSendUpdateNotifyExt( uint8_t TransSeq, zAddrType_t *dstAddr, uint16_t totalTransmissions,
                                                   uint16_t txFailures, ZDNwkMgr_EDScanConfirm_t *pEDScanConfirm,
-                                                  uint8_t txOptions, zdpSendCnf_t sendCnf );
+                                                  uint8_t txOptions, pfnAfCnfCB cnfCB, void* param );
 
 void ZDNwkMgr_EDScanConfirmCB( NLME_EDScanConfirm_t *EDScanConfirm );
 void ZDNwkMgr_DataConfirmCB(uint8_t status, uint8_t endpoint, uint8_t transID, uint16_t clusterID, void* cnfParam);
@@ -766,10 +766,9 @@ static void ZDNwkMgr_CheckForChannelInterference( ZDNwkMgr_EDScanConfirm_t *pEDS
   {
     // Send a Management Network Update notify to the Network Manager
     ZDNwkMgr_MgmtNwkUpdateNotifyAddr.addr.shortAddr = _NIB.nwkManagerAddr;
-    zdpSendCnf_t sendCnf = { ZDNwkMgr_DataConfirmCB, NULL };
-    ZDNwkMgr_BuildAndSendUpdateNotifyExt( 0, &ZDNwkMgr_MgmtNwkUpdateNotifyAddr,
-                                          ZDNwkMgr_TotalTransmissions, ZDNwkMgr_TxFailures,
-                                          pEDScanConfirm, AF_MSG_ACK_REQUEST, sendCnf );
+    ZDNwkMgr_BuildAndSendUpdateNotifyExt( 0, &ZDNwkMgr_MgmtNwkUpdateNotifyAddr, ZDNwkMgr_TotalTransmissions,
+                                          ZDNwkMgr_TxFailures, pEDScanConfirm,
+                                          AF_MSG_ACK_REQUEST, ZDNwkMgr_DataConfirmCB, NULL );
 
     if ( ZDNwkMgr_NumUpdateNotifySent == 0 )
     {
@@ -798,13 +797,14 @@ static void ZDNwkMgr_CheckForChannelInterference( ZDNwkMgr_EDScanConfirm_t *pEDS
  * @param       TransSeq - transaction sequence number
  * @param       dstAddr - destination address of the message
  * @param       pEDScanConfirm - update notify info
- * @param       sendCnf - Send Confirm Callback & Parameter
+ * @param       cnfCB - Send Confirm Callback
+ * @param       param - Send Confirm Callback Parameter
  *
  * @return      afStatus_t
  */
 static void ZDNwkMgr_BuildAndSendUpdateNotifyExt( uint8_t TransSeq, zAddrType_t *dstAddr, uint16_t totalTransmissions,
                                                   uint16_t txFailures, ZDNwkMgr_EDScanConfirm_t *pEDScanConfirm,
-                                                  uint8_t txOptions, zdpSendCnf_t sendCnf )
+                                                  uint8_t txOptions, pfnAfCnfCB cnfCB, void* param )
 {
   uint8_t i;
   uint8_t listCount = 0;
@@ -835,7 +835,7 @@ static void ZDNwkMgr_BuildAndSendUpdateNotifyExt( uint8_t TransSeq, zAddrType_t 
   // Send a Management Network Update notify back
   ZDP_MgmtNwkUpdateNotifyExt( TransSeq, dstAddr, pEDScanConfirm->status,
                               pEDScanConfirm->scannedChannels, totalTransmissions,
-                              txFailures, listCount, energyValues, txOptions, false, sendCnf );
+                              txFailures, listCount, energyValues, txOptions, false, cnfCB, param );
   if ( energyValues )
     OsalPort_free( energyValues );
 }
