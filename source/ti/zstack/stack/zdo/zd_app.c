@@ -2873,8 +2873,8 @@ ZStatus_t ZDO_JoinIndicationCB(uint16_t ShortAddress, uint8_t *ExtendedAddress,
       pNewDevice->shortAddr = ShortAddress;
       pNewDevice->timeDelta = ZDAPP_NEW_DEVICE_TIME - timeToFire;
 
-      // Start the timer only if there is no pending timer
-      if ( pNewDevice->timeDelta == ZDAPP_NEW_DEVICE_TIME )
+      // Start the timer only if there is no pending timer and ZDApp_NewDeviceList is empty. fixed by luoyiming 2021-05-16
+      if ( ( pNewDevice->timeDelta == ZDAPP_NEW_DEVICE_TIME ) && ( ZDApp_NewDeviceList == pNewDevice ) )
       {
         OsalPortTimers_startTimer( ZDAppTaskID, ZDO_NEW_DEVICE, ZDAPP_NEW_DEVICE_TIME );
       }
