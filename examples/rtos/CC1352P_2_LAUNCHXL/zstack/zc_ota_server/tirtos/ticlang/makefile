@@ -11,7 +11,7 @@ LNK = "$(TICLANG_ARMCOMPILER)/bin/tiarmclang"
 XDCTARGET = ti.targets.arm.clang.M4F
 PLATFORM = ti.platforms.simplelink:CC1352P1F3
 
-OBJECTS = ti_drivers_config.obj ti_devices_config.obj ti_radio_config.obj CC1352P_2_LAUNCHXL_fxns.obj mac_user_config.obj mac_settings.obj ota_server.obj ota_server_data.obj ota_common.obj main.obj cui.obj zstackstartup.obj crc.obj nvocmp.obj saddr.obj zcl_sampleapps_ui.obj mac_util.obj util_timer.obj utc_clock.obj af.obj bdb.obj bdb_finding_and_binding.obj bdb_reporting.obj bdb_touchlink.obj bdb_touchlink_initiator.obj bdb_touchlink_target.obj bdb_tl_commissioning.obj touchlink_initiator_app.obj touchlink_target_app.obj gp_common.obj gp_proxy_table.obj gp_proxy.obj gp_bit_fields.obj dbg.obj mac_cfg.obj binding_table.obj nwk_globals.obj stub_aps.obj osal_nv.obj osal_port.obj osal_port_timers.obj zstackapi.obj zstacktask.obj zdiags.obj zglobals.obj zd_app.obj zd_config.obj zd_nwk_mgr.obj zd_object.obj zd_profile.obj zd_sec_mgr.obj zmac.obj zmac_cb.obj rom_init_154.obj fh_rom_init.obj hmac_rom_init.obj lmac_rom_init.obj icall_osal_rom_init.obj npi_client_mt.obj npi_frame_mt.obj npi_rxbuf.obj npi_task.obj npi_tl.obj npi_tl_uart.obj mt.obj mt_af.obj mt_app.obj mt_app_config.obj mt_debug.obj mt_gp.obj mt_mac.obj mt_nwk.obj mt_ota.obj mt_sys.obj mt_task.obj mt_util.obj mt_version.obj mt_zdo.obj mt_znp.obj  zcl.obj zcl_port.obj zcl_general.obj zcl_green_power.obj zcl_ha.obj zcl_diagnostic.obj zcl_closures.obj zcl_appliance_control.obj zcl_appliance_events_alerts.obj zcl_appliance_statistics.obj zcl_cc.obj zcl_cert_data.obj zcl_electrical_measurement.obj zcl_hvac.obj zcl_retail.obj zcl_telecommunication.obj zcl_lighting.obj zcl_ll.obj zcl_ms.obj zcl_ota.obj zcl_partition.obj zcl_pi.obj zcl_poll_control.obj zcl_power_profile.obj zcl_se.obj zcl_ss.obj
+OBJECTS = ti_drivers_config.obj ti_devices_config.obj ti_radio_config.obj CC1352P_2_LAUNCHXL_fxns.obj mac_user_config.obj mac_settings.obj ota_server.obj ota_server_data.obj ota_common.obj cui.obj zstackstartup.obj crc.obj nvocmp.obj saddr.obj zcl_sampleapps_ui.obj mac_util.obj util_timer.obj utc_clock.obj af.obj bdb.obj bdb_finding_and_binding.obj bdb_reporting.obj bdb_touchlink.obj bdb_touchlink_initiator.obj bdb_touchlink_target.obj bdb_tl_commissioning.obj touchlink_initiator_app.obj touchlink_target_app.obj gp_common.obj gp_proxy_table.obj gp_proxy.obj gp_bit_fields.obj dbg.obj mac_cfg.obj binding_table.obj nwk_globals.obj stub_aps.obj osal_nv.obj osal_port.obj osal_port_timers.obj zstackapi.obj zstacktask.obj zdiags.obj zglobals.obj zd_app.obj zd_config.obj zd_nwk_mgr.obj zd_object.obj zd_profile.obj zd_sec_mgr.obj zmac.obj zmac_cb.obj rom_init_154.obj fh_rom_init.obj hmac_rom_init.obj lmac_rom_init.obj icall_osal_rom_init.obj npi_client_mt.obj npi_frame_mt.obj npi_rxbuf.obj npi_task.obj npi_tl.obj npi_tl_uart.obj mt.obj mt_af.obj mt_app.obj mt_app_config.obj mt_debug.obj mt_gp.obj mt_mac.obj mt_nwk.obj mt_ota.obj mt_sys.obj mt_task.obj mt_util.obj mt_version.obj mt_zdo.obj mt_znp.obj  zcl.obj zcl_port.obj zcl_general.obj zcl_green_power.obj zcl_ha.obj zcl_diagnostic.obj zcl_closures.obj zcl_appliance_control.obj zcl_appliance_events_alerts.obj zcl_appliance_statistics.obj zcl_cc.obj zcl_cert_data.obj zcl_electrical_measurement.obj zcl_hvac.obj zcl_retail.obj zcl_telecommunication.obj zcl_lighting.obj zcl_ll.obj zcl_ms.obj zcl_ota.obj zcl_partition.obj zcl_pi.obj zcl_poll_control.obj zcl_power_profile.obj zcl_se.obj zcl_ss.obj main.obj
 
 CONFIGPKG = zc_ota_server
 
@@ -141,7 +141,6 @@ CFLAGS = -I../.. \
     "-I${COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR}/source/ti/zstack/apps/ota_server" \
     "@${PROJECT_ROOT}/Stack/Config/f8wcoord.opts" \
     "-I${PROJECT_ROOT}/Common/zcl" \
-    -DCOMBO_MAC \
     -DDEVICE_FAMILY=cc13x0 \
     -DDeviceFamily_CC13X2 \
     -DNO_CC1312R1_SUPPORT \
@@ -215,10 +214,6 @@ ota_server_data.obj: $(COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR)/source/ti/
 	@ $(CC) $(CFLAGS) -c $< @$(CONFIGPKG)/compiler.opt -o $@
 
 ota_common.obj: $(COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR)/source/ti/zstack/ota/ota_common.c ti_drivers_config.h $(CONFIGPKG)/compiler.opt
-	@ echo Building $@
-	@ $(CC) $(CFLAGS) -c $< @$(CONFIGPKG)/compiler.opt -o $@
-
-main.obj: $(COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR)/source/ti/zstack/startup/main.c ti_drivers_config.h $(CONFIGPKG)/compiler.opt
 	@ echo Building $@
 	@ $(CC) $(CFLAGS) -c $< @$(CONFIGPKG)/compiler.opt -o $@
 
@@ -599,6 +594,10 @@ zcl_se.obj: $(COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR)/source/ti/zstack/st
 	@ $(CC) $(CFLAGS) -c $< @$(CONFIGPKG)/compiler.opt -o $@
 
 zcl_ss.obj: $(COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR)/source/ti/zstack/stack/zcl/zcl_ss.c ti_drivers_config.h $(CONFIGPKG)/compiler.opt
+	@ echo Building $@
+	@ $(CC) $(CFLAGS) -c $< @$(CONFIGPKG)/compiler.opt -o $@
+
+main.obj: $(COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR)/source/ti/zstack/startup/main.c ti_drivers_config.h $(CONFIGPKG)/compiler.opt
 	@ echo Building $@
 	@ $(CC) $(CFLAGS) -c $< @$(CONFIGPKG)/compiler.opt -o $@
 

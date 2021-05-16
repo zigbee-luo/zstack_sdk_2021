@@ -59,7 +59,7 @@
 #include "fh_pib.h"
 #include "fh_sm.h"
 #include "fh_util.h"
-
+#ifdef FEATURE_FREQ_HOP_MODE
 extern uint32 FHIE_getCcaSfdTime(uint8 fhFrameType);
 extern void FHIE_genUTIE(uint8_t *pBuf, uint8_t fhFrameType);
 extern void FHIE_genBTIE(uint8_t *pBuf, uint8_t frameType);
@@ -92,6 +92,7 @@ extern uint16_t FHNT_addTempEUI(sAddrExt_t *peui);
 extern uint8_t FHNT_assessTime(uint32_t curTime,
                                uint32_t oldTime,
                                uint32_t validTime);
+
 extern uint16_t FHNT_delTempIndex(uint16_t eui_index);
 extern NODE_OPT_ENTRY_s *FHNT_getAvailEntry(sAddr_t *pSrcAddr);
 extern NODE_ENTRY_s *FHNT_getRemoveEntry(void);
@@ -393,4 +394,5 @@ void FH_ROM_Init(void)
     /* assign the FH ROM JT table */
     RAM_MAC_BASE_ADDR[ROM_RAM_FH_TABLE_INDEX] = (uint32)(FH_ROM_Flash_JT);
 }
+#endif
 

@@ -617,7 +617,7 @@ macMRFSKPHYDesc_t macMRFSKGenPhyTable[MAC_GENERIC_PHY_DESCRIPTOR_ENTRIES] =
 };
 #endif
 #if defined(FEATURE_BEACON_MODE) || defined(FEATURE_NON_BEACON_MODE)
-#if defined(LAUNCHXL_CC2652RB)
+#if defined(LP_CC2652RB)
 uint16 macBeaconMargin[] =
 {
   33,

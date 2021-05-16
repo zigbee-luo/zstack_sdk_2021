@@ -154,7 +154,9 @@ void TIMAC_ROM_Init( void )
   ** Controller ROM
   */
   Icall_Osal_ROM_Init();
+#ifdef FEATURE_FREQ_HOP_MODE
   FH_ROM_Init();
+#endif
   HMAC_ROM_Init();
   LMAC_ROM_Init();
 

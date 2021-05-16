@@ -283,7 +283,7 @@ When the project is built under the default build configuration, the resulting b
 
 > During normal operation when flashed for the first time, the application .bin and the bim .hex file need to be loaded separately. Ensure that BIM binary is flashed/downloaded before downloading the application using the debugger for debug purposes
 
-> If you have enabled the persistent image authentication feature in the BIM (see the bim_onchip readme for more information), you will have to flash the `sensor_oad_onchip_persistent_secure_cc1352lp_tirtos_ccs.bin` file, not the .hex file. The .bin file is required since it has the populated security segment signature for BIM authentication. When flashing the persistent image .bin file, you must specify the binary load address as the starting address specified in the persistent application project's linker file (`IMG_A_FLASH_START`). The default persistent application starting address is 0x0002E000
+> If you have enabled the persistent image authentication feature in the BIM (see the bim_onchip readme for more information), you will have to flash the `sensor_oad_onchip_persistent_secure_cc1352lp_tirtos_ccs.bin` file, not the .hex file. The .bin file is required since it has the populated security segment signature for BIM authentication. When flashing the persistent image .bin file, you must specify the binary load address as the starting address specified in the persistent application project's linker file (`IMG_A_FLASH_START`). The default persistent application starting address will depend on the available flash memory of the device.
 
 The persistent image is built from the sensor_oad_onchip_persistent project:
 * `<SDK_DIR>/examples/rtos/CC13X2R1_LAUNCHXL/ti154stack/sensor_oad_onchip_persistent_secure`

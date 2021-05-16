@@ -1815,9 +1815,9 @@ ZStatus_t bdb_rejoinNwk(void)
     }
     else
 #endif
-    // enable rejoin poll rate
+    // disable polling during rejoin scan
     {
-      nwk_SetCurrentPollRateType(POLL_RATE_TYPE_JOIN_REJOIN,TRUE);
+      nwk_SetCurrentPollRateType(POLL_RATE_DISABLED, TRUE);
     }
 
     // Perform Secure or Unsecure Rejoin depending on available configuration

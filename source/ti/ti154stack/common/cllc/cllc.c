@@ -1378,7 +1378,15 @@ static void startCnfCb(ApiMac_mlmeStartCnf_t *pData)
 
 /*!
  * @brief       Parse the energy scan results to determine the best channel
- *              for the coordinator
+ *              for the coordinator.
+ *
+ *              The results of the energy detect scan represent the energy
+ *              measurements on each provided channel after normalizing and
+ *              scaling the RF power level. A measured RSSI value is converted
+ *              to a score between 0 and 255, using the minimum measured RSSI
+ *              (-90 dBm) and saturation energy (-5 dBm) values and the
+ *              formula: ED = (255 * (RSSI + 90))/85. A lower energy detect
+ *              measurement represents a more suitable channel.
  *
  * @param       pResults -  pointer to energy scan results
  */

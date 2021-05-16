@@ -129,7 +129,9 @@
 #endif
 
 // Timeout value to process New Devices
+#ifndef ZDAPP_NEW_DEVICE_TIME
 #define ZDAPP_NEW_DEVICE_TIME     600   // in ms
+#endif
 
 
 //ZDP_BIND_SKIP_VALIDATION, redefined as ZDP_BIND_VALIDATION
@@ -175,6 +177,14 @@ ZDO_PendingBindReq_t *ZDAppPendingBindReq = NULL;
 
 uint32_t runtimeChannel;
 uint8_t FrameCounterUpdated = FALSE;
+
+// Device Announce Failure callback, add by luoyiming 2021-05-08
+void (*pZdoAnnounceNewAddrFailureCB)(uint8_t status) = NULL;
+
+// Device Join Indication callback notify to higher layer, add by luoyiming 2021-05-15
+void (*pfnZdoJoinIndCB)( uint16_t ShortAddress, uint8_t *ExtendedAddress,
+                         uint8_t CapabilityFlags, uint8_t type ) = NULL;
+
 /*********************************************************************
  * EXTERNAL VARIABLES
  */
@@ -230,6 +240,9 @@ void ZDApp_AgeOutPendingBindEntry( void );
 
 void ZDApp_SetParentAnnceTimer( void );
 void ZDApp_StoreNwkSecMaterial(void);
+
+// Device Announce confirm callback, add by luoyiming 2021-05-08
+void ZDO_AnnounceNewAddrConfirmCB( uint8_t status, uint8_t endpoint, uint8_t transID, uint16_t clusterID, void* cnfParam );
 
 /*********************************************************************
  * LOCAL VARIABLES
@@ -2807,7 +2820,7 @@ void ZDO_AddrChangeIndicationCB( uint16_t newAddr )
 ZStatus_t ZDO_JoinIndicationCB(uint16_t ShortAddress, uint8_t *ExtendedAddress,
                                 uint8_t CapabilityFlags, uint8_t type)
 {
-  (void)ExtendedAddress;
+  // (void)ExtendedAddress;
   //check if the device is leaving before responding to rejoin request
   if( OsalPortTimers_getTimerTimeout( ZDAppTaskID , ZDO_DEVICE_RESET) )
   {
@@ -2815,7 +2828,7 @@ ZStatus_t ZDO_JoinIndicationCB(uint16_t ShortAddress, uint8_t *ExtendedAddress,
   }
 
 #if ZDO_NV_SAVE_RFDs
-    (void)CapabilityFlags;
+    // (void)CapabilityFlags;
 
 #else  // if !ZDO_NV_SAVE_RFDs
     if (CapabilityFlags & CAPINFO_DEVICETYPE_FFD)
@@ -2866,10 +2879,16 @@ ZStatus_t ZDO_JoinIndicationCB(uint16_t ShortAddress, uint8_t *ExtendedAddress,
       pNewDevice->shortAddr = ShortAddress;
       pNewDevice->timeDelta = ZDAPP_NEW_DEVICE_TIME - timeToFire;
 
-      // Start the timer only if there is no pending timer
-      if ( pNewDevice->timeDelta == ZDAPP_NEW_DEVICE_TIME )
+      // Start the timer only if there is no pending timer and ZDApp_NewDeviceList is empty. fixed by luoyiming 2021-05-16
+      if ( ( pNewDevice->timeDelta == ZDAPP_NEW_DEVICE_TIME ) && ( ZDApp_NewDeviceList == pNewDevice ) )
       {
         OsalPortTimers_startTimer( ZDAppTaskID, ZDO_NEW_DEVICE, ZDAPP_NEW_DEVICE_TIME );
+      }
+
+      // Notify to higher layer by callback, add by luoyiming 2021-05-15.
+      if( pfnZdoJoinIndCB != NULL )
+      {
+        pfnZdoJoinIndCB( ShortAddress, ExtendedAddress, CapabilityFlags, type );
       }
     }
 
@@ -3307,8 +3326,14 @@ void ZDApp_AnnounceNewAddress( void )
   // Turn off data request hold
   APSME_HoldDataRequests( 0 );
 
-  ZDP_DeviceAnnce( NLME_GetShortAddr(), NLME_GetExtAddr(),
-                     ZDO_Config_Node_Descriptor.CapabilityFlags, 0 );
+  // new function to send ZDP Device Announce with AF confirm callback
+  afStatus_t status = ZDP_DeviceAnnceEx( NLME_GetShortAddr(), NLME_GetExtAddr(),
+                                         ZDO_Config_Node_Descriptor.CapabilityFlags, 0, ZDO_AnnounceNewAddrConfirmCB, NULL );
+  // Trigger callback when Device Announce sent failed, add by luoyiming 2021-05-08
+  if( status != ZSuccess && pZdoAnnounceNewAddrFailureCB )
+  {
+    pZdoAnnounceNewAddrFailureCB( status );
+  }
 
   // Setup the timeout
   APSME_HoldDataRequests( ZDAPP_HOLD_DATA_REQUESTS_TIMEOUT );
@@ -3325,6 +3350,24 @@ void ZDApp_AnnounceNewAddress( void )
                                  zgEndDeviceTimeoutValue,
                                  zgEndDeviceConfiguration );
     }
+  }
+}
+
+/*********************************************************************
+ * @fn      ZDO_AnnounceNewAddrConfirmCB
+ *
+ * @brief   Send Device Announce confirm callback
+ *
+ * @param   same with pfnAfCnfCB in af.h
+ *
+ * @return  none
+ */
+void ZDO_AnnounceNewAddrConfirmCB( uint8_t status, uint8_t endpoint, uint8_t transID, uint16_t clusterID, void* cnfParam )
+{
+  // Trigger callback when Device Announce sent failed, add by luoyiming 2021-05-08
+  if( status != ZSuccess && pZdoAnnounceNewAddrFailureCB )
+  {
+    pZdoAnnounceNewAddrFailureCB( status );
   }
 }
 

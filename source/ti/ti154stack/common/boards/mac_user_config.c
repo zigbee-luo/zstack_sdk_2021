@@ -141,7 +141,7 @@ const uint32_t macRfDriverTable[] =
     (uint32_t) RF_requestAccess };
 
 // Crypto Driver API Table
-#if !defined(DeviceFamily_CC13X2) && !defined(DeviceFamily_CC26X2)
+#if !defined(DeviceFamily_CC13X2) && !defined(DeviceFamily_CC26X2) && !defined(DeviceFamily_CC13X2X7) && !defined(DeviceFamily_CC26X2X7) && !defined(DeviceFamily_CC13X1) && !defined(DeviceFamily_CC26X1)
 const uint32_t macCryptoDriverTable[] =
   { (uint32_t) CryptoCC26XX_close,
     (uint32_t) CryptoCC26XX_init,
@@ -198,7 +198,7 @@ const uint32_t macCryptoDriverTable[] =
 
 /* CC1352R1/CC1352P1/CC1352P_2 Configuration */
 #if defined(LAUNCHXL_CC1352R1) || defined(LAUNCHXL_CC1352P1) \
-    || defined(LAUNCHXL_CC1352P_2)
+    || defined(LAUNCHXL_CC1352P_2) || defined (LP_CC1352P7_1)
 #if defined(COPROCESSOR)
 void rfSelect(uint16_t phyId)
 {
@@ -280,7 +280,7 @@ void rfSelect(uint16_t phyId)
 /* end of CC1352R1/CC1352P1/CC1352P_2 Configuration */
 
 /* CC1352P_4 Configuration */
-#if defined(LAUNCHXL_CC1352P_4)
+#if defined(LAUNCHXL_CC1352P_4) || defined(LP_CC1352P7_4)
 #if defined(COPROCESSOR)
 void rfSelect(uint16_t phyId)
 {
@@ -332,7 +332,7 @@ void rfSelect(uint16_t phyId)
 /* end of CC1352P_4 Configuration */
 
 /* CC1312R1 Configuration */
-#if defined(LAUNCHXL_CC1312R1)
+#if defined(LAUNCHXL_CC1312R1) || defined(LP_CC1312R7)
 #if defined(COPROCESSOR)
 void rfSelect(uint16_t phyId)
 {
@@ -395,8 +395,9 @@ void rfSelect(uint16_t phyId)
 /* end of CC1312R1 Configuration */
 
 /* CC26X2R1/CC2652RB Configuration */
-#if defined(LAUNCHXL_CC26X2R1) || defined(LAUNCHXL_CC2652RB) || \
-    defined(LP_CC2652RSIP) || defined(LP_CC2652PSIP)
+#if defined(LAUNCHXL_CC26X2R1) || defined(LP_CC2652RB) || \
+    defined(LP_CC2652RSIP) || defined(LP_CC2652PSIP) || \
+    defined(LP_CC2652R7)
 void rfSelect(uint16_t phyId)
 {
     (void)phyId;

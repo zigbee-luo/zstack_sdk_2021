@@ -50,7 +50,7 @@ if (system.deviceData.board && system.deviceData.board.components.RF) {
 var Display = scripting.addModule("/ti/display/Display");
 var Display_UART = Display.addInstance();
 
-/* if a xds110Uart component exists, assign it to the Display_UART instance */
+/* If a xds110Uart component exists, assign it to the Display_UART instance */
 if (system.deviceData.board && system.deviceData.board.components.XDS110UART) {
     Display_UART.$hardware = system.deviceData.board.components.XDS110UART;
 }
@@ -131,12 +131,20 @@ BUTTON_R.gpioPin.interruptTrigger = "Falling Edge";
 BUTTON_R.gpioPin.pinInstance.$name = "CONFIG_PIN_BTN2";  // Descriptive name for the BUTTON_R PIN
 
 /* ======== NVS ======== */
+const deviceName = system.getScript("/ti/ti154stack/ti154stack_common.js").getLaunchPadFromDevice();
 var NVS = scripting.addModule("/ti/drivers/NVS");        // Add a NVS module
 var NVS_INT = NVS.addInstance();                         // Add an internal NVS module instance
 
 NVS_INT.$name = "CONFIG_NVSINTERNAL";                    // Internal NVS
-NVS_INT.internalFlash.regionBase = 0x52000;              // Sensor project has 2 NV pages default
-NVS_INT.internalFlash.regionSize = 0x4000;
+if (deviceName.includes("R7") || deviceName.includes("P7"))
+{
+    NVS_INT.internalFlash.regionBase = 0xAA000;
+}
+else
+{
+    NVS_INT.internalFlash.regionBase = 0x52000;
+}
+NVS_INT.internalFlash.regionSize = 0x4000;               // Sensor project has 2 NV pages default
 
 /* ======== Device ======== */
 var device = scripting.addModule("ti/devices/CCFG");
@@ -156,7 +164,12 @@ for(var setting in rfDesignSettings)
 
 /* ======== TI-15.4 Stack ======== */
 var TI154Stack = scripting.addModule("/ti/ti154stack/ti154stack");
-TI154Stack.rfDesign = rfDesignSettings.rfDesign;
+
+if(rfDesignSettings.rfDesign !== undefined)
+{
+    TI154Stack.rfDesign = rfDesignSettings.rfDesign;
+}
+
 TI154Stack.project = "sensorSM";
 TI154Stack.secureLevel = "macSecureAndCommissioning";
 TI154Stack.lockProject = true;

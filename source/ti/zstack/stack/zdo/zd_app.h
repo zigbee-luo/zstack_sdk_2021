@@ -406,6 +406,10 @@ extern uint8_t ZDO_UseExtendedPANID[Z_EXTADDR_LEN];
 
 extern uint32_t runtimeChannel;
 
+extern void (*pZdoAnnouceNewAddrFailureCB)(uint8_t status);
+
+extern void (*pfnZdoJoinIndCB)( uint16_t ShortAddress, uint8_t *ExtendedAddress, uint8_t CapabilityFlags, uint8_t type );
+
 /*********************************************************************
  * FUNCTIONS - API
  */

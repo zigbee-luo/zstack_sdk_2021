@@ -50,7 +50,7 @@ if (system.deviceData.board && system.deviceData.board.components.RF) {
 var Display = scripting.addModule("/ti/display/Display");
 var Display_UART = Display.addInstance();
 
-/* if a xds110Uart component exists, assign it to the Display_UART instance */
+/* If a xds110Uart component exists, assign it to the Display_UART instance */
 if (system.deviceData.board && system.deviceData.board.components.XDS110UART) {
     Display_UART.$hardware = system.deviceData.board.components.XDS110UART;
 }
@@ -129,19 +129,34 @@ BUTTON_R.gpioPin.interruptTrigger = "Falling Edge";
 BUTTON_R.gpioPin.pinInstance.$name = "CONFIG_PIN_BTN2";  // Descriptive name for the BUTTON_R PIN
 
 /* ======== NVS ======== */
+const deviceName = system.getScript("/ti/ti154stack/ti154stack_common.js").getLaunchPadFromDevice();
 var NVS = scripting.addModule("/ti/drivers/NVS");
 var NVS_INT = NVS.addInstance();
 var NVS_INT1 = NVS.addInstance();
 
 NVS_INT.$name = "CONFIG_NVSINTERNAL";                  // Descriptive name for NVS instance
 NVS_INT.internalFlash.regionType = "Generated";        // Automatically generated region
-NVS_INT.internalFlash.regionBase = 0x2A000;           // Sensor project has 2 NV pages default
+if (deviceName.includes("R7") || deviceName.includes("P7"))
+{
+    NVS_INT.internalFlash.regionBase = 0x82000;
+}
+else
+{
+    NVS_INT.internalFlash.regionBase = 0x2A000;
+}
 NVS_INT.internalFlash.regionSize = 0x4000;             // Internal flash region size
 
 NVS_INT1.$name = "CONFIG_NVSINTERNAL1";                // Descriptive name for NVS instance 1
 NVS_INT1.internalFlash.regionType = "Pointer";         // Pointer to predefined region
 NVS_INT1.internalFlash.regionBase = 0x0;               // Internal flash region 1 base
-NVS_INT1.internalFlash.regionSize = 0x2A000;           // Internal flash region 1 size
+if (deviceName.includes("R7") || deviceName.includes("P7"))
+{
+    NVS_INT1.internalFlash.regionSize = 0x82000;
+}
+else
+{
+    NVS_INT1.internalFlash.regionSize = 0x2A000;
+}
 
 /* ======== Device ======== */
 var device = scripting.addModule("ti/devices/CCFG");
@@ -164,6 +179,11 @@ for(var setting in rfDesignSettings)
 
 /* ======== TI-15.4 Stack ======== */
 var TI154Stack = scripting.addModule("/ti/ti154stack/ti154stack");
-TI154Stack.rfDesign = rfDesignSettings.rfDesign;
+
+if(rfDesignSettings.rfDesign !== undefined)
+{
+    TI154Stack.rfDesign = rfDesignSettings.rfDesign;
+}
+
 TI154Stack.project = "sensorOAD";
 TI154Stack.lockProject = true;

@@ -131,7 +131,6 @@
             -I${COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR}/source/ti/zstack/apps/doorlock
             @${PROJECT_ROOT}/Stack/Config/f8wenddev.opts
             -I${PROJECT_ROOT}/Common/zcl
-            -DCOMBO_MAC
             -DDEVICE_FAMILY=cc13x0
             -DDeviceFamily_CC13X2
             -DNO_CC1312R1_SUPPORT
@@ -201,8 +200,6 @@
         <file path="${COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR}/source/ti/zstack/apps/doorlock/zcl_sampledoorlock_data.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="Application">
         </file>
         <file path="${COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR}/source/ti/zstack/apps/doorlock/zcl_sample_app_def.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="Application/ui">
-        </file>
-        <file path="${COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR}/source/ti/zstack/startup/main.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="Application/StartUp">
         </file>
         <file path="${COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR}/source/ti/common/cui/cui.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="Application/ui">
         </file>
@@ -585,6 +582,8 @@
         <file path="${COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR}/source/ti/zstack/stack/zcl/zcl_ss.c" openOnCreation="false" excludeFromBuild="true" action="copy" targetDirectory="Common/zcl">
         </file>
         <file path="${COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR}/source/ti/zstack/stack/zcl/zcl_ss.h" openOnCreation="false" excludeFromBuild="true" action="copy" targetDirectory="Common/zcl">
+        </file>
+        <file path="${COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR}/source/ti/zstack/startup/main.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="Application/StartUp">
         </file>
         <file path="../../zed_doorlock.syscfg" openOnCreation="false" excludeFromBuild="false" action="copy">
         </file>

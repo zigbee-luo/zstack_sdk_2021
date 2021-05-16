@@ -84,7 +84,6 @@
     <define>NV_RESTORE</define>
     <define>NV_INIT</define>
     <define>FEATURE_NON_BEACON_MODE</define>
-    <define>COMBO_MAC</define>
     <define>DEVICE_FAMILY=cc13x0</define>
     <define>DeviceFamily_CC13X2</define>
     <define>NO_CC1312R1_SUPPORT</define>

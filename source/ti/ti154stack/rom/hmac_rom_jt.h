@@ -175,7 +175,7 @@
 /* configurable parameters */
 #define macCfg                          ( * (macCfg_t * )                           ROM_HMAC_JT_OFFSET(64))
 
-#if !defined(DeviceFamily_CC13X2) && !defined(DeviceFamily_CC26X2)
+#if !defined(DeviceFamily_CC13X2) && !defined(DeviceFamily_CC26X2) && !defined(DeviceFamily_CC13X2X7) && !defined(DeviceFamily_CC26X2X7) && !defined(DeviceFamily_CC13X1) && !defined(DeviceFamily_CC26X1)
 #define Crypto_handle                   ( *(CryptoCC26XX_Handle  *)                ROM_HMAC_JT_OFFSET(65))
 #else
 #define AESCCM_handle                   ( *(AESCCM_Handle  *)                      ROM_HMAC_JT_OFFSET(65))

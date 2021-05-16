@@ -2736,6 +2736,9 @@ static void setSmPassKeyAction(const char _input, char* _pLines[3], CUI_cursorIn
             uint32_t passkeyValue = atoi(passkeyASCII);
             //Set passkey in SM
             SM_setPasskey(passkeyValue);
+#ifdef USE_DMM
+            RemoteDisplay_updateSmState(SMCOMMISSIONSTATE_COMMISSIONING);
+#endif /* USE_DMM */
             strcpy(passkeyASCII, "");
             break;
         }

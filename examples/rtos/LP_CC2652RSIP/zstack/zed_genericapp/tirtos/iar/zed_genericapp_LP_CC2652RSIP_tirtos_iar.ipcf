@@ -222,9 +222,9 @@
         <path copyTo="$PROJ_DIR$/Application/Services/sdata.h">$COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR$/source/ti/ti154stack/services/sdata/sdata.h</path>
       </group>
       <group name="Application/StartUp">
-        <path copyTo="$PROJ_DIR$/Application/StartUp/main.c">$COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR$/source/ti/zstack/startup/main.c</path>
         <path copyTo="$PROJ_DIR$/Application/StartUp/zstackstartup.c">$COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR$/source/ti/zstack/startup/zstackstartup.c</path>
         <path copyTo="$PROJ_DIR$/Application/StartUp/zstackstartup.h">$COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR$/source/ti/zstack/startup/zstackstartup.h</path>
+        <path copyTo="$PROJ_DIR$/Application/StartUp/main.c">$COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR$/source/ti/zstack/startup/main.c</path>
       </group>
       <group name="Application/ZStackApi">
         <path copyTo="$PROJ_DIR$/Application/ZStackApi/zstackapi.c">$COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR$/source/ti/zstack/stack/api/zstackapi.c</path>

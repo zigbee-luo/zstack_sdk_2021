@@ -2256,7 +2256,8 @@ typedef struct _apimac_mlmescancnf
     /*! Depending on the scanType the results are in this union */
     union
     {
-        /*! The list of energy measurements, one for each channel scanned */
+        /*! The list of energy measurements, one for each channel scanned.
+         * Energy measurements are proportional to the RSSI value measured */
         uint8_t *pEnergyDetect;
         /*! The list of PAN descriptors, one for each beacon found */
         ApiMac_panDesc_t *pPanDescriptor;
@@ -2910,10 +2911,16 @@ extern ApiMac_status_t ApiMac_mlmeResetReq(bool setDefaultPib);
  *              duplicate beacons.
  *              <BR>
  *              For energy detect scans the application must set
- *              result.energyDetect to point to a buffer of size 18 bytes to
- *              store the results of the scan.  The application must not
- *              access or deallocate this buffer until the
- *              [Scan Confirm Callback](@ref ApiMac_scanCnfFp_t) is called.
+ *              result.pEnergyDetect to point to a buffer of size 18 bytes.
+ *              The application must not access or deallocate this buffer
+ *              until the [Scan Confirm Callback](@ref ApiMac_scanCnfFp_t)
+ *              is called. The results of an energy detect scan will be stored
+ *              in result.pEnergyDetect and represent the energy measurements
+ *              on each provided channel after normalizing and scaling the RF
+ *              power level.  A measured RSSI value is converted to a score
+ *              between 0 and 255, using the minimum measured RSSI (-90 dBm)
+ *              and saturation energy (-5 dBm) values and the formula:
+ *              ED = (255 * (RSSI + 90))/85.
  *              <BR>
  *              An energy detect, active or passive scan may be performed
  *              at any time if a scan is not already in progress.  However a

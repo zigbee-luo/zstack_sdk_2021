@@ -129,7 +129,7 @@ macUserCfg_t macUser0Cfg[] = MAC_USER_CFG;
 
 /* Extended Address offset in FCFG (LSB..MSB) */
 #define EXTADDR_OFFSET 0x2F0
-#if defined(DeviceFamily_CC13X2) || (DeviceFamily_CC26X2)
+#if defined(DeviceFamily_CC13X2) || defined(DeviceFamily_CC26X2) || defined(DeviceFamily_CC13X2X7) || defined(DeviceFamily_CC26X2X7)|| defined(DeviceFamily_CC13X1) || defined(DeviceFamily_CC26X1)
 #define APP_TASK_STACK_SIZE 1536
 #else
 #define APP_TASK_STACK_SIZE 960
@@ -236,11 +236,13 @@ Void appTaskFxn(UArg a0, UArg a1)
     Power_setConstraint(PowerCC26XX_IDLE_PD_DISALLOW);
     Power_setConstraint(PowerCC26XX_SB_DISALLOW);
 
-    IOCPortConfigureSet(IOID_20, IOC_PORT_RFC_GPO0, IOC_STD_OUTPUT);
-    IOCPortConfigureSet(IOID_18, IOC_PORT_RFC_GPI0, IOC_STD_INPUT);
+    IOCPortConfigureSet(IOID_4, IOC_PORT_RFC_GPO0, IOC_IOMODE_NORMAL);
+    IOCPortConfigureSet(IOID_5, IOC_PORT_RFC_GPI0, IOC_INPUT_ENABLE);
+    IOCPortConfigureSet(IOID_15, IOC_PORT_RFC_TRC, IOC_IOMODE_NORMAL);
+    //IOC_STD_OUTPUT
     // configure RF Core SMI Command Link
-    IOCPortConfigureSet(IOID_22, IOC_IOCFG0_PORT_ID_RFC_SMI_CL_OUT, IOC_STD_OUTPUT);
-    IOCPortConfigureSet(IOID_21, IOC_IOCFG0_PORT_ID_RFC_SMI_CL_IN, IOC_STD_INPUT);
+//    IOCPortConfigureSet(IOID_22, IOC_IOCFG0_PORT_ID_RFC_SMI_CL_OUT, IOC_STD_OUTPUT);
+//    IOCPortConfigureSet(IOID_21, IOC_IOCFG0_PORT_ID_RFC_SMI_CL_IN, IOC_STD_INPUT);
 #endif
 
 #ifndef OSAL_PORT2TIRTOS

@@ -110,7 +110,7 @@ const deviceToBoard = {
     CC1352R: "CC1352R1_LAUNCHXL",
     CC1352P: "CC1352P1_LAUNCHXL",
     CC2652R1: "CC26X2R1_LAUNCHXL",
-    CC2652RB: "CC2652RB_LAUNCHXL",
+    CC2652RB: "LP_CC2652RB",
     CC2652R1FSIP: "LP_CC2652RSIP",
     CC2652P1FSIP: "LP_CC2652PSIP",
 };
@@ -146,8 +146,8 @@ const supportedMigrations = {
     CC26X2R1_LAUNCHXL: {},
     LP_CC2652RSIP: {}
   },
-  CC2652RB_LAUNCHXL: {
-    CC2652RB_LAUNCHXL: {},
+  LP_CC2652RB: {
+    LP_CC2652RB: {},
     CC2652RB1FRGZ: {}
   },
 
@@ -179,7 +179,7 @@ const supportedMigrations = {
     LP_CC2652RSIP: {}
   },
   CC2652RB1FRGZ: {
-    CC2652RB_LAUNCHXL: {},
+    LP_CC2652RB: {},
     CC2652RB1FRGZ: {}
   }
 };
@@ -336,6 +336,17 @@ function getBoardPhySettings(inst)
                 + "CC1352P_2_LAUNCHXL_rf_defaults.js");
         }
     }
+    else if(inst !== null && system.deviceData.deviceId === "CC1352P7RGZ")
+    {
+        const rfDesign = inst.rfDesign;
+
+        // Get the RF Design configurable
+        if(rfDesign === "LP_CC1352P7-4")
+        {
+            phySettings = system.getScript("/ti/ti154stack/rf_config/"
+                + "LP_CC1352P7_4_rf_defaults.js");
+        }
+    }
     else
     {
         // Initialize with launchpad mapped from device
@@ -437,7 +448,7 @@ const zstackCCFGSettings = {
     },
     CC1352P_4_LAUNCHXL_CCFG_SETTINGS: {},
     CC26X2R1_LAUNCHXL_CCFG_SETTINGS: {},
-    CC2652RB_LAUNCHXL_CCFG_SETTINGS: {}
+    LP_CC2652RB_CCFG_SETTINGS: {}
 };
 
 const boardName = getDeviceOrLaunchPadName(true);

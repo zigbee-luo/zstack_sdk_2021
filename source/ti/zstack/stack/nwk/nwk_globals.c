@@ -573,9 +573,6 @@ void nwk_InitializeDefaultPollRates(void)
         nwk_SetConfigPollRate(POLL_RATE_TYPE_RESPONSE, RESPONSE_POLL_RATE);
         nwk_SetConfigPollRate(POLL_RATE_TYPE_GENERIC_1_SEC, GENERIC_POLL_RATE_1_SEC);
 
-        //Enabled the default Poll Rate
-        nwk_SetCurrentPollRateType(POLL_RATE_TYPE_DEFAULT,TRUE);
-
         //Update the Poll Rate table in NV
         osal_nv_write(ZCD_NV_POLL_RATE, sizeof(nwk_pollRateTable), &nwk_pollRateTable);
     }

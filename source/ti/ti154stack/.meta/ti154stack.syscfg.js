@@ -355,12 +355,13 @@ function validate(inst, vo)
         validateModeOptions(inst, vo);
 
         // Call validation methods of all groups
-        radioScript.validate(inst, vo);
         networkScript.validate(inst, vo);
-        powerScript.validate(inst, vo);
         oadScript.validate(inst, vo);
         securityScript.validate(inst, vo);
     }
+
+    powerScript.validate(inst, vo);
+    radioScript.validate(inst, vo);
 }
 
 /*
@@ -380,8 +381,9 @@ function validate(inst, vo)
 function getLibs(inst)
 {
     const libs = [];
+    const board = Common.getLaunchPadFromDevice();
 
-    if(inst.$static.genLibs && inst.$static.project !== "coprocessor")
+    if(inst.$static.genLibs)
     {
         // Get device ID and toolchain to select appropriate libs
         const GenLibs = system.getScript("/ti/utils/build/GenLibs.syscfg.js");
@@ -399,7 +401,15 @@ function getLibs(inst)
             default: security = "secure_"; break;
         }
 
-        const devType = Common.isSub1GHzDevice() ? "cc13x2" : "cc26x2";
+        let devType;
+        if(board.includes("R7") || board.includes("P7"))
+        {
+            devType = Common.isSub1GHzDevice() ? "cc13x2x7" : "cc26x2x7";
+        }
+        else // cc13x2/cc26x2
+        {
+            devType = Common.isSub1GHzDevice() ? "cc13x2" : "cc26x2";
+        }
         const freq = (inst.$static.freqBand === "freqBand24") ? "_2_4g" : "";
 
         const maclib = basePath + "maclib_" + security + devType + freq + ".a";
@@ -407,7 +417,15 @@ function getLibs(inst)
 
         if(system.modules["/ti/dmm/dmm"] === undefined)
         {
-            const macosallib = basePath + "maclib_osal_tirtos_cc13x2_26x2.a";
+            let macosallib;
+            if(board.includes("R7") || board.includes("P7"))
+            {
+                macosallib = basePath + "maclib_osal_tirtos_cc13x2x7_26x2x7.a";
+            }
+            else // cc13x2/cc26x2
+            {
+                macosallib = basePath + "maclib_osal_tirtos_cc13x2_26x2.a";
+            }
             libs.push(macosallib);
         }
     }
@@ -509,6 +527,7 @@ const ti154StackModule = {
     longDescription: docs.ti154stackModule.longDescription,
     moduleStatic: moduleStatic,
     templates: {
+        "/ti/ti154stack/templates/ti_154stack_features.h.xdt": true,
         "/ti/utils/build/GenLibs.cmd.xdt":
         {
             modName: "/ti/ti154stack/ti154stack",

@@ -79,6 +79,14 @@ const config = {
             description: Docs.rxOnIdle.description,
             longDescription: Docs.rxOnIdle.longDescription
         },
+        {
+            name: "forceVddr",
+            displayName: "Force VDDR",
+            default: false,
+            hidden: true,
+            description: Docs.forceVddr.description,
+            longDescription: Docs.forceVddr.longDescription
+        },
         /* Note: transmitPowerSubG and transmitPower24G are legacy configs. In
          * order to seamlessly handle custom board changes at runtime, the new
          * trasmit power config, transmitPower, is dynamically updated with the
@@ -202,15 +210,7 @@ function getTxPowerConfigOptions(inst)
 function getTxPowerRFConfig(inst, freqBand, phyType, phyGroup)
 {
     // Retrieve launchpad type
-    let board;
-    if(inst === null)
-    {
-        board = Common.getLaunchPadFromDevice();
-    }
-    else
-    {
-        board = inst.rfDesign;
-    }
+    const board = Common.getDeviceOrLaunchPadName(true, null, inst);
 
     // Get the command handler for this phy instance
     const cmdHandler = CmdHandler.get(phyGroup, phyType);
@@ -223,8 +223,11 @@ function getTxPowerRFConfig(inst, freqBand, phyType, phyGroup)
     let txPowerHiOptions = {options: []};
 
     if((board.includes("CC1352P1") && freqBand === "freqBandSub1")
+        || (board.includes("CC1352P7-1") && freqBand === "freqBandSub1")
+        || (board.includes("CC1352P7_1") && freqBand === "freqBandSub1")
         || (((board.includes("CC1352P-2") || board.includes("CC1352P_2"))
         || (board.includes("CC1352P-4") || board.includes("CC1352P_4"))
+        || (board.includes("CC1352P7-4") || board.includes("CC1352P7_4"))
         || (board.includes("CC2652PSIP")))
         && (freqBand === "freqBand24")))
     {
@@ -358,41 +361,68 @@ function getSafeTransmitPower(inst)
  */
 function validate(inst, validation)
 {
-    // Validate dynamic transmit power config
-    const validOptions = getTxPowerConfigOptions(inst);
-    Common.validateDynamicEnum(inst, validation, "transmitPower", validOptions);
-
-    // Retrieve phy and phy group from rf_defaults files
-    const rfPhySettings = rfCommon.getPhyTypeGroupFromRFConfig(inst);
-    const rfPhyType = rfPhySettings.phyType;
-    const rfPhyGroup = rfPhySettings.phyGroup;
-
-    // Get the command handler for this phy instance
-    const cmdHandler = CmdHandler.get(rfPhyGroup, rfPhyType);
-    const freq = cmdHandler.getFrequency();
-
-    // Get transmit power from RF config module
-    const freqBand = rfCommon.getSafeFreqBand(inst);
-    const rfTxPowerSettings = getRFTxPowerFrom154TxPower(inst, freqBand,
-        rfPhyType, rfPhyGroup);
-    const rfTransmitPower = rfTxPowerSettings.txPower;
-    const rfHighPA = rfTxPowerSettings.highPA;
-
-    // Verify that ccfg forceVddr is set if required
     const ccfg = system.modules["/ti/devices/CCFG"].$static;
 
-    if(ParameterHandler.validateTxPower(rfTransmitPower, freq, rfHighPA)
-        && !ccfg.forceVddr)
+    if(inst.project === "coprocessor")
     {
-        validation.logWarning(`The selected RF TX Power requires `
-                + `${system.getReference(ccfg, "forceVddr")} to be enabled in `
-                + `the Device Configuration module`, inst, "transmitPower");
-    }
+        if(Common.isSub1GHzDevice() && !Common.is433MHzDevice(inst))
+        {
+            // Verify that forceVddr configs match for CoP projects
+            if(inst.forceVddr !== ccfg.forceVddr)
+            {
+                validation.logError(`Must match Force VDDR setting in the \
+                    ${system.getReference(ccfg, "forceVddr")} module`, inst,
+                "forceVddr");
+            }
 
-    if(rfHighPA)
+            const currBoard = Common.getDeviceOrLaunchPadName(true, null, inst);
+            const is1352P1Board = (currBoard != null
+                && currBoard.includes("P1"));
+
+            if(inst.forceVddr && is1352P1Board)
+            {
+                validation.logInfo(`Enabling Force VDDR on this device will `
+                    + `disable high PA`, inst, "forceVddr");
+            }
+        }
+    }
+    else
     {
-        validation.logInfo("The selected RF TX Power enables high PA ", inst,
-            "transmitPower");
+        // Validate dynamic transmit power config
+        const validOptions = getTxPowerConfigOptions(inst);
+        Common.validateDynamicEnum(inst, validation, "transmitPower",
+            validOptions);
+
+        // Retrieve phy and phy group from rf_defaults files
+        const rfPhySettings = rfCommon.getPhyTypeGroupFromRFConfig(inst);
+        const rfPhyType = rfPhySettings.phyType;
+        const rfPhyGroup = rfPhySettings.phyGroup;
+
+        // Get the command handler for this phy instance
+        const cmdHandler = CmdHandler.get(rfPhyGroup, rfPhyType);
+        const freq = cmdHandler.getFrequency();
+
+        // Get transmit power from RF config module
+        const freqBand = rfCommon.getSafeFreqBand(inst);
+        const rfTxPowerSettings = getRFTxPowerFrom154TxPower(inst, freqBand,
+            rfPhyType, rfPhyGroup);
+        const rfTransmitPower = rfTxPowerSettings.txPower;
+        const rfHighPA = rfTxPowerSettings.highPA;
+
+        // Verify that ccfg forceVddr is set if required
+        if(ParameterHandler.validateTxPower(rfTransmitPower, freq, rfHighPA)
+            && !ccfg.forceVddr)
+        {
+            validation.logWarning(`The selected TX Power requires Force VDDR`
+                + `in ${system.getReference(ccfg, "forceVddr")} to be`
+                + `enabled`, inst, "transmitPower");
+        }
+
+        if(rfHighPA)
+        {
+            validation.logInfo("The selected TX Power enables high PA ",
+                inst, "transmitPower");
+        }
     }
 }
 
@@ -407,6 +437,8 @@ function validate(inst, validation)
 function getPowerConfigHiddenState(inst, cfgName)
 {
     let isVisible = true;
+    const isCoPProject = (inst.project === "coprocessor");
+
     switch(cfgName)
     {
         case "transmitPowerSubG":
@@ -418,19 +450,26 @@ function getPowerConfigHiddenState(inst, cfgName)
         }
         case "rxOnIdle":
         {
-            isVisible = inst.project.includes("sensor");
+            isVisible = (inst.project.includes("sensor") && !isCoPProject);
+            break;
+        }
+        case "forceVddr":
+        {
+            isVisible = (isCoPProject && Common.isSub1GHzDevice()
+                && !Common.is433MHzDevice(inst));
             break;
         }
         case "transmitPower":
+        {
+            isVisible = !isCoPProject;
+            break;
+        }
         default:
         {
             isVisible = true;
             break;
         }
     }
-
-    // Hide all configs for coprocessor project
-    isVisible = isVisible && (inst.project !== "coprocessor");
 
     // Return whether config is hidden
     return(!isVisible);
@@ -473,6 +512,7 @@ function setAllPowerConfigsHiddenState(inst, ui)
 exports = {
     config: config,
     validate: validate,
+    getTxPowerRFConfig: getTxPowerRFConfig,
     getRFTxPowerFrom154TxPower: getRFTxPowerFrom154TxPower,
     getTxPowerConfigOptions: getTxPowerConfigOptions,
     setPowerConfigHiddenState: setPowerConfigHiddenState,

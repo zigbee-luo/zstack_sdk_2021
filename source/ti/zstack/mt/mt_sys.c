@@ -163,7 +163,7 @@ static void MT_SysSetUtcTime(uint8_t *pBuf);
 static void MT_SysGetUtcTime(void);
 #endif //FEATURE_UTC_TIME
 static void MT_SysSetTxPower(uint8_t *pBuf);
-#if !defined( CC26XX ) && !defined (DeviceFamily_CC26X2) && !defined (DeviceFamily_CC13X2)
+#if !defined( CC26XX ) && !defined (DeviceFamily_CC26X2) && !defined (DeviceFamily_CC13X2) && !defined (DeviceFamily_CC26X2X7) && !defined (DeviceFamily_CC13X2X7)
 static void MT_SysAdcRead(uint8_t *pBuf);
 #endif /* !CC26xx */
 #if !defined( CC253X_MACNP )
@@ -247,7 +247,7 @@ uint8_t MT_SysCommandProcessing(uint8_t *pBuf)
       MT_SysRandom();
       break;
 
-#if !defined( CC26XX ) && !defined (DeviceFamily_CC26X2) && !defined (DeviceFamily_CC13X2)
+#if !defined( CC26XX ) && !defined (DeviceFamily_CC26X2) && !defined (DeviceFamily_CC13X2) && !defined (DeviceFamily_CC26X2X7) && !defined (DeviceFamily_CC13X2X7)
       case MT_SYS_ADC_READ:
       MT_SysAdcRead(pBuf);
       break;
@@ -1326,7 +1326,7 @@ static void MT_SysRandom()
                                 sizeof(retArray), retArray );
 }
 
-#if !defined( CC26XX ) && !defined (DeviceFamily_CC26X2) && !defined (DeviceFamily_CC13X2)
+#if !defined( CC26XX ) && !defined (DeviceFamily_CC26X2) && !defined (DeviceFamily_CC13X2) && !defined (DeviceFamily_CC26X2X7) && !defined (DeviceFamily_CC13X2X7)
 /******************************************************************************
  * @fn      MT_SysAdcRead
  *

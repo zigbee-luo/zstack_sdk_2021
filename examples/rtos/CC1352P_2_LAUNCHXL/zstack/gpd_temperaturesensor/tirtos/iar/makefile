@@ -95,7 +95,6 @@ CFLAGS = -I../.. \
     "-I$(COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR)/source/ti/common/time" \
     "-I$(COM_TI_SIMPLELINK_CC13X2_26X2_SDK_INSTALL_DIR)/source/ti/zstack/apps/gpd_temperaturesensor" \
     "-f$(PROJ_DIR)/configPkg/compiler.opt.defs" \
-    -DCOMBO_MAC \
     -DDEVICE_FAMILY=cc13x0 \
     -DDeviceFamily_CC13X2 \
     -DNO_CC1312R1_SUPPORT \

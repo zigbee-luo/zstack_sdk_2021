@@ -263,11 +263,12 @@ static void taskFxn(UArg a0, UArg a1)
     Power_setConstraint(PowerCC26XX_IDLE_PD_DISALLOW);
     Power_setConstraint(PowerCC26XX_SB_DISALLOW);
 
-    IOCPortConfigureSet(IOID_20, IOC_PORT_RFC_GPO0, IOC_STD_OUTPUT);
-    IOCPortConfigureSet(IOID_18, IOC_PORT_RFC_GPI0, IOC_STD_INPUT);
+    IOCPortConfigureSet(IOID_4, IOC_PORT_RFC_GPO0, IOC_IOMODE_NORMAL);
+    IOCPortConfigureSet(IOID_5, IOC_PORT_RFC_GPI0, IOC_INPUT_ENABLE);
+    IOCPortConfigureSet(IOID_15, IOC_PORT_RFC_TRC, IOC_IOMODE_NORMAL);
     // configure RF Core SMI Command Link
-    IOCPortConfigureSet(IOID_22, IOC_IOCFG0_PORT_ID_RFC_SMI_CL_OUT, IOC_STD_OUTPUT);
-    IOCPortConfigureSet(IOID_21, IOC_IOCFG0_PORT_ID_RFC_SMI_CL_IN, IOC_STD_INPUT);
+//    IOCPortConfigureSet(IOID_22, IOC_IOCFG0_PORT_ID_RFC_SMI_CL_OUT, IOC_STD_OUTPUT);
+//    IOCPortConfigureSet(IOID_21, IOC_IOCFG0_PORT_ID_RFC_SMI_CL_IN, IOC_STD_INPUT);
 #endif
 
 #ifndef OSAL_PORT2TIRTOS

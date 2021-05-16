@@ -127,6 +127,15 @@ const devSpecific2Gfsk200KbpsSettings = {
     }
 };
 
+// Object containing IEEE settings for the CC1352P1_LAUNCHXL
+const devSpecificIEEESettings = {
+    args: {
+        codeExportConfig: {
+            cmdList_ieee_15_4: ["cmdRadioSetupPa"],
+            cmdRadioSetupPa: "RF_cmdRadioSetup_ieee154"
+        }
+    }
+};
 
 /*
  *  ======== Arrays Containing all PHY Settings ========
@@ -146,11 +155,17 @@ const defaultPropPhyList = [
         rfCommon.common2Gfsk200KbpsSettings)
 ];
 
-// IEEE phy setting not supported on the CC1352P1_LAUNCHXL
+// IEEE phy setting only supported on CC1352P1_LAUNCHXL CoP
 const defaultIEEEPhyList = [
+];
+
+const defaultIEEEPhyListCoP = [
+    rfCommon.mergeRFSettings(devSpecificIEEESettings,
+        rfCommon.commonIEEESettings)
 ];
 
 exports = {
     defaultPropPhyList: defaultPropPhyList,
-    defaultIEEEPhyList: defaultIEEEPhyList
+    defaultIEEEPhyList: defaultIEEEPhyList,
+    defaultIEEEPhyListCoP: defaultIEEEPhyListCoP
 };

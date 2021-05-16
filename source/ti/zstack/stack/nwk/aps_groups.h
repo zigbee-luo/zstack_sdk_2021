@@ -80,6 +80,17 @@ typedef struct apsGroupItem
   aps_Group_t          group;
 } apsGroupItem_t;
 
+typedef struct
+{
+  uint16_t numRecs;
+} nvGroupsHdr_t;
+
+typedef struct apsGroupNVItem
+{
+  uint8_t                endpoint;
+  aps_Group_t          group;
+} apsGroupNVItem_t;
+
 /*********************************************************************
  * GLOBAL VARIABLES
  */

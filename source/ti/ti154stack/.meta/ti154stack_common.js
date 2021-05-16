@@ -65,7 +65,7 @@ const ti154stackCCFGSettings = {
     CC26X2R1_LAUNCHXL_CCFG_SETTINGS: {
         forceVddr: false
     },
-    CC2652RB_LAUNCHXL_CCFG_SETTINGS: {
+    LP_CC2652RB_CCFG_SETTINGS: {
         forceVddr: false
     },
     LP_CC2652RSIP_CCFG_SETTINGS: {
@@ -73,18 +73,33 @@ const ti154stackCCFGSettings = {
     },
     LP_CC2652PSIP_CCFG_SETTINGS: {
         forceVddr: false
+    },
+    LP_CC1312R7_CCFG_SETTINGS: {
+        forceVddr: false
+    },
+    LP_CC1352P7_1_CCFG_SETTINGS: {
+        forceVddr: false
+    },
+    LP_CC1352P7_4_CCFG_SETTINGS: {
+        forceVddr: false
+    },
+    LP_CC2652R7_CCFG_SETTINGS: {
+        forceVddr: false
     }
 };
 
 // Dictionary mapping a device name to default LaunchPad
 const deviceToBoard = {
+    CC1352P7: "LP_CC1352P7_1",
+    CC1312R7: "LP_CC1312R7",
     CC1352R: "CC1352R1_LAUNCHXL",
     CC1352P: "CC1352P1_LAUNCHXL",
     CC1312R: "CC1312R1_LAUNCHXL",
+    CC2652R7: "LP_CC2652R7",
     CC2652R1FSIP: "LP_CC2652RSIP",
     CC2652P1FSIP: "LP_CC2652PSIP",
     CC2652R1: "CC26X2R1_LAUNCHXL",
-    CC2652RB: "CC2652RB_LAUNCHXL"
+    CC2652RB: "LP_CC2652RB"
 };
 
 const currBoardName = getDeviceOrLaunchPadName(true);
@@ -98,11 +113,16 @@ const supportedMigrations = {
         CC1352R1F3RGZ: (target) => isMigrationValidFreqProject(target),
         CC1352R1_LAUNCHXL: (target) => isMigrationValidFreqProject(target)
     },
-    CC1352R1: {
+    CC1312R7: {
+        CC1312R7RGZ: {},
+        LP_CC1312R7: {}
+    },
+    CC1352R: {
         CC1352R1F3RGZ: {},
         CC1352R1_LAUNCHXL: {},
         CC1312R1F3RGZ: (target) => isMigrationValidFreqProject(target),
-        CC1312R1_LAUNCHXL: (target) => isMigrationValidFreqProject(target)
+        CC1312R1_LAUNCHXL: (target) => isMigrationValidFreqProject(target),
+        LPSTK_CC1352R: () => isMigrationValidLPSTK()
     },
     CC1352P1_LAUNCHXL: {
         CC1352P1F3RGZ: {},
@@ -122,6 +142,19 @@ const supportedMigrations = {
         CC1352P_2_LAUNCHXL: {},
         CC1352P_4_LAUNCHXL: {}
     },
+    LP_CC1352P7_1: {
+        CC1352P7RGZ: {},
+        LP_CC1352P7_1: {}
+    },
+    LP_CC1352P7_4: {
+        CC1352P7RGZ: {},
+        LP_CC1352P7_4: {}
+    },
+    CC1352P7RGZ: {
+        CC1352P7RGZ: {},
+        LP_CC1352P7_1: {},
+        LP_CC1352P7_4: {}
+    },
     /* Represents RSIP board and device */
     "CC26.2R.*SIP": {
         CC2652R1FSIP: {},
@@ -138,7 +171,11 @@ const supportedMigrations = {
     },
     CC2652RB: {
         CC2652RB1FRGZ: {},
-        CC2652RB_LAUNCHXL: {}
+        LP_CC2652RB: {}
+    },
+    CC2652R7: {
+        CC2652R7RGZ: {},
+        LP_CC2652R7: {}
     }
 };
 
@@ -158,10 +195,7 @@ const supportedMigrations = {
  */
 function isMigrationValidFreq(migTarget)
 {
-    let migSupported = {
-        warn: "This migration is not currently recommended and has not been "
-        + "fully tested"
-    };
+    let migSupported = {};
 
     const inst = system.modules["/ti/ti154stack/ti154stack"].$static;
 
@@ -209,6 +243,35 @@ function isMigrationValidProject()
             + "Consider starting from an example in "
             + "<SDK_INSTALL_DIR>/examples/ that is closer to the desired "
             + "migration target"
+        };
+    }
+
+    return(migSupported);
+}
+
+/*
+ * ======== isMigrationValidLPSTK ========
+ * Determines whether a migration to the LPSTK_CC1352R board is valid based on
+ * whether the DMM module is included
+ *
+ * @returns One of the following Objects:
+ *    - {} <--- Empty object if migration is valid
+ *    - {warn: "Warning markdown text"} <--- Object with warn property
+ *                                           if migration is valid but
+ *                                           might require user action
+ *    - {disable: "Disable markdown text"} <--- Object with disable property
+ *                                              if migration is not valid
+ */
+function isMigrationValidLPSTK()
+{
+    let migSupported = {};
+
+    if(system.modules["/ti/dmm/dmm"] === undefined)
+    {
+        migSupported = {
+            warn: "This migration is not recommended and has not been tested. "
+            + "The LPSTK_CC1352R is not supported on the standalone TI 15.4 "
+            + "Stack."
         };
     }
 
@@ -394,20 +457,24 @@ function migrate(currTarget, migrationTarget, env, projectName = null)
  *  @param convertToBoard - Boolean. When true, return the associated LaunchPad
  *                          name if a device is being used without a LaunchPad
  *  @param name - Optional name of board or device. If null, will use current
- *               device set
+ *                device set
+ *  @param inst - Optional 15.4 instance. If not null, will use board set in RF
+ *                design config
  *  @returns String - Name of the board with prefix /ti/boards and suffix
  *                    .syscfg.json stripped off.  If no board was specified,
  *                    the device name is returned.
  */
-function getDeviceOrLaunchPadName(convertToBoard, boardName = null)
+function getDeviceOrLaunchPadName(convertToBoard, boardName = null, inst = null)
 {
     let name = boardName;
+
     if(_.isNil(name))
     {
         name = system.deviceData.deviceId;
     }
 
-    if(system.deviceData.board != null)
+    // Use current board if none is passed
+    if(!_.isNil(system.deviceData.board) && _.isNil(boardName))
     {
         name = system.deviceData.board.source;
 
@@ -419,9 +486,17 @@ function getDeviceOrLaunchPadName(convertToBoard, boardName = null)
     }
 
     // Check if this is a standalone device without a LaunchPad
-    if(convertToBoard && !name.includes("LAUNCHXL"))
+    if(convertToBoard && !name.includes("LAUNCHXL") && !name.includes("LP_"))
     {
-        name = getLaunchPadFromDevice(name);
+        if(!_.isNil(inst))
+        {
+            /* Use board from RF Design */
+            name = inst.rfDesign;
+        }
+        else
+        {
+            name = getLaunchPadFromDevice(name);
+        }
     }
 
     return(name);
@@ -452,15 +527,12 @@ function isSub1GHzDevice(boardName = null)
  */
 function is24GHzDevice(inst, boardName = null)
 {
-    let board = getLaunchPadFromDevice(boardName);
-    if(inst !== null)
-    {
-        board = inst.rfDesign;
-    }
+    const board = getDeviceOrLaunchPadName(true, boardName, inst);
 
     return(board.includes("CC26") || board.includes("CC1352R1")
         || board.includes("CC1352P-2") || board.includes("CC1352P_2")
-        || board.includes("CC1352P-4") || board.includes("CC1352P_4"));
+        || board.includes("CC1352P-4") || board.includes("CC1352P_4")
+        || board.includes("CC1352P7-4") || board.includes("CC1352P7_4"));
 }
 
 /*!
@@ -480,7 +552,8 @@ function is433MHzDevice(inst, boardName = null)
         board = inst.rfDesign;
     }
 
-    return(board.includes("P-4") || board.includes("P_4"));
+    return(board.includes("P-4") || board.includes("P_4")
+        || board.includes("P7-4") || board.includes("P7_4"));
 }
 
 /*!
@@ -897,6 +970,7 @@ exports = {
     ccfgSettings: ccfgSettings,
     isHighPADevice: isHighPADevice,
     getLaunchPadFromDevice: getLaunchPadFromDevice,
+    getDeviceOrLaunchPadName: getDeviceOrLaunchPadName,
     cTypeMax: cTypeMax,
     toHexString: toHexString,
     validateRangeHex: validateRangeHex,

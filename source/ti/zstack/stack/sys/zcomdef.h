@@ -110,6 +110,7 @@ extern "C"
 #define ZCD_NV_EX_TCLK_IC_TABLE           0x0005
 #define ZCD_NV_EX_APS_KEY_DATA_TABLE      0x0006
 #define ZCD_NV_EX_NWK_SEC_MATERIAL_TABLE  0x0007
+#define ZCD_NV_EX_GROUP_TABLE             0x0008
 
 // ZCL Port NV IDs (Application Layer NV Items)
 #define ZCL_PORT_SCENE_TABLE_NV_ID        0x0001
@@ -156,7 +157,7 @@ extern "C"
 
 // APS Layer NV item IDs
 #define ZCD_NV_BINDING_TABLE              0x0041
-#define ZCD_NV_GROUP_TABLE                0x0042
+#define ZCD_NV_LEGACY_GROUP_TABLE         0x0042  // Deprecated. Refer to ZCD_NV_EX_GROUP_TABLE
 #define ZCD_NV_APS_FRAME_RETRIES          0x0043
 #define ZCD_NV_APS_ACK_WAIT_DURATION      0x0044
 #define ZCD_NV_APS_ACK_WAIT_MULTIPLIER    0x0045

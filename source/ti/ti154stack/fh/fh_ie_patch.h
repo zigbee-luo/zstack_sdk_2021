@@ -67,7 +67,7 @@
 /******************************************************************************
  Prototypes
  *****************************************************************************/
-
+uint16_t FHNT_delTempIndex(uint16_t eui_index);
 FHAPI_status FHIEPATCH_extractHie(uint8_t subIeId, uint16_t ieLength, uint8_t *pBuf, uint8_t *pOut);
 FHAPI_status FHIEPATCH_extractPie(uint8_t subIeId, uint16_t ieLength, uint8_t *pBuf, uint8_t *pOut);
 uint16_t FHIEPATCH_getHieLen(uint32_t ieBitmap);

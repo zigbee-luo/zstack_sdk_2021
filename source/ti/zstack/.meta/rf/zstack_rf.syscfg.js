@@ -278,7 +278,7 @@ function getRfDesignOptions()
     }
     else if(deviceId === "CC2652RB1FRGZ")
     {
-        newRfDesignOptions = [{name: "LAUNCHXL-CC2652RB"}];
+        newRfDesignOptions = [{name: "LP_CC2652RB"}];
     }
     else if(deviceId === "CC2652R1FSIP")
     {
@@ -287,6 +287,14 @@ function getRfDesignOptions()
     else if(deviceId === "CC2652P1FSIP")
     {
         newRfDesignOptions = [{name: "LP_CC2652PSIP"}];
+    }
+    else if(deviceId === "CC2652R7RGZ")
+    {
+        newRfDesignOptions = [{name: "LP_CC2652R7"}];
+    }
+    else if(deviceId === "CC1352P7RGZ")
+    {
+        newRfDesignOptions = [{name: "LP_CC1352P7-4"}];
     }
     else
     {
@@ -379,7 +387,8 @@ function getTxPowerConfigOptions(inst)
     let freq = cmdHandler.getFrequency();
 
     // special case for P-4
-    if (inst.rfDesign == "LAUNCHXL-CC1352P-4")
+    if (inst.rfDesign == "LAUNCHXL-CC1352P-4" ||
+        inst.rfDesign == "LP_CC1352P7-4")
     {
       freq = 2499;
     }

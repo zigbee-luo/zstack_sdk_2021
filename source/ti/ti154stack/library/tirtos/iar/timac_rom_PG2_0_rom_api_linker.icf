@@ -78,7 +78,7 @@
 --define_symbol FHNT_getNTIndexFromTempIndex=0x10033671
 --define_symbol FHNT_getRemoveEntryFromTemp=0x10032ea1
 --define_symbol FHNT_addTempEUI=0x10033381
---define_symbol FHNT_delTempIndex=0x1003386d
+//--define_symbol FHNT_delTempIndex=0x1003386d
 --define_symbol FHNT_assessTime=0x10033aa9
 --define_symbol FHNT_purgeTimerIsrCb=0x10033a3d
 --define_symbol FHNT_getRemoveEntry=0x100334c5

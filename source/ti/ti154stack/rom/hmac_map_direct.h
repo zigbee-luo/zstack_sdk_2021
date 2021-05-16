@@ -283,7 +283,7 @@ extern macSecurityPib_t* pMacSecurityPib ;
 /* configurable parameters */
 extern macCfg_t macCfg;
 
-#if !defined(DeviceFamily_CC13X2) && !defined(DeviceFamily_CC26X2)
+#if !defined(DeviceFamily_CC13X2) && !defined(DeviceFamily_CC26X2) && !defined(DeviceFamily_CC13X2X7) && !defined(DeviceFamily_CC26X2X7) && !defined(DeviceFamily_CC13X1) && !defined(DeviceFamily_CC26X1)
 extern CryptoCC26XX_Handle Crypto_handle;
 #else
 extern AESCCM_Handle AESCCM_handle;

@@ -73,9 +73,9 @@
 
 #define SOFTWARE_VER            {'0', '0', '0', '1'}
 
-#ifdef DeviceFamily_CC26X2
+#if defined(DeviceFamily_CC26X2) || defined(DeviceFamily_CC26X2X7)
 #define    OAD_WIRELESS_TECH_TIMAC  OAD_WIRELESS_TECH_TIMAC_2_4G     //!< Wireless protocol type BLE/TI-MAC/ZIGBEE etc. */
-#elif defined(DeviceFamily_CC13X2)
+#elif defined(DeviceFamily_CC13X2) || defined(DeviceFamily_CC13X2X7)
 #define    OAD_WIRELESS_TECH_TIMAC  OAD_WIRELESS_TECH_TIMAC_SUBG     //!< Wireless protocol type BLE/TI-MAC/ZIGBEE etc. */
 #endif
 

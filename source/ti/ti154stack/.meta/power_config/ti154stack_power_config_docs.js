@@ -69,7 +69,25 @@ __Default__: False (unchecked)
 `
 };
 
+const forceVddr = {
+    description: `Necessary for external load mode, or for maximum PA output \
+power`,
+    longDescription: `
+This value must match the Force VDDR parameter in the Device Configuration \
+module.
+\n\
+It must only also be configured in the TI 15.4 Stack module for \
+CoProcessor projects in order to generate the appropriate radio setup command. \
+For all other projects, the radio setup command will be configured using the \
+Transmit Power parameter and the Force VDDR parameter in the Device \
+Configuration module.
+\n\
+__Default__: False (unchecked)
+`
+};
+
 exports = {
     transmitPower: transmitPower,
-    rxOnIdle: rxOnIdle
+    rxOnIdle: rxOnIdle,
+    forceVddr: forceVddr
 };

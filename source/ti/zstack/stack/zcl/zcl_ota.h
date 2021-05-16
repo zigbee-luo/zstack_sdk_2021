@@ -85,7 +85,7 @@ extern "C"
 
 // Simple descriptor values
 /// Simple descriptor data for OTA cluster endpoint
-#define ZCL_OTA_ENDPOINT                              14
+#define ZCL_OTA_ENDPOINT                              20
 #define ZCL_OTA_SAMPLE_PROFILE_ID                     ZCL_HA_PROFILE_ID
 #define ZCL_OTA_SAMPLE_DEVICEID                       0
 #define ZCL_OTA_DEVICE_VERSION                        0

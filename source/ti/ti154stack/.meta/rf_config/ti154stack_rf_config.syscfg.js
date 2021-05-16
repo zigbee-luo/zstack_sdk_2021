@@ -60,6 +60,17 @@ const oadScript = system.getScript("/ti/ti154stack/oad_config/"
 const Docs = system.getScript("/ti/ti154stack/rf_config/"
     + "ti154stack_rf_config_docs.js");
 
+// Get RF command handler
+const CmdHandler = system.getScript("/ti/devices/radioconfig/cmd_handler.js");
+
+// Get common radio config module functions
+const commonRadioConfig = system.getScript("/ti/devices/radioconfig/"
+    + "radioconfig_common.js");
+
+// Get radio config parameter handler
+const ParameterHandler = system.getScript("/ti/devices/radioconfig/"
++ "parameter_handler.js");
+
 // Configurables for the RF Configuration module
 const config = {
     name: "radioSettings",
@@ -167,7 +178,7 @@ function getRfDesignOptions()
     }
     else if(deviceId === "CC2652RB1FRGZ")
     {
-        newRfDesignOptions = [{name: "LAUNCHXL-CC2652RB"}];
+        newRfDesignOptions = [{name: "LP_CC2652RB"}];
     }
     else if(deviceId === "CC2652R1FSIP")
     {
@@ -176,6 +187,21 @@ function getRfDesignOptions()
     else if(deviceId === "CC2652P1FSIP")
     {
         newRfDesignOptions = [{name: "LP_CC2652PSIP"}];
+    }
+    else if(deviceId === "CC1352P7RGZ")
+    {
+        newRfDesignOptions = [
+            {name: "LP_CC1352P7-1"},
+            {name: "LP_CC1352P7-4"}
+        ];
+    }
+    else if(deviceId === "CC1312R7RGZ")
+    {
+        newRfDesignOptions = [{name: "LP_CC1312R7"}];
+    }
+    else if(deviceId === "CC2652R7RGZ")
+    {
+        newRfDesignOptions = [{name: "LP_CC2652R7"}];
     }
     else
     {
@@ -195,12 +221,15 @@ function getRfDesignOptions()
  */
 function onRadioConfigChange(inst, ui)
 {
-    // Update dependencies
-    const isSubGSelected = (inst.freqBand === "freqBandSub1");
+    if(inst.project !== "coprocessor")
+    {
+        // Update dependencies
+        const isSubGSelected = (inst.freqBand === "freqBandSub1");
 
-    inst.freqBand = rfCommon.getDefaultFreqBand(isSubGSelected);
-    inst.freqSub1 = getDefaultFreqSub1(inst);
-    onFreqBandChange(inst, ui);
+        inst.freqBand = rfCommon.getDefaultFreqBand(isSubGSelected);
+        inst.freqSub1 = getDefaultFreqSub1(inst);
+        onFreqBandChange(inst, ui);
+    }
 }
 
 /*
@@ -399,27 +428,30 @@ function getDefaultPhy154Settings()
 function getRFConfigHiddenState(inst, cfgName)
 {
     let isVisible = true;
+    const isCoPProject = (inst.project === "coprocessor");
+
     switch(cfgName)
     {
         case "freqSub1":
         {
-            isVisible = (inst.freqBand === "freqBandSub1");
+            isVisible = (inst.freqBand === "freqBandSub1" && !isCoPProject);
             break;
         }
-        case "rfDesign":
         case "freqBand":
         case "phyType":
         case "phyID":
         case "channelPage":
+        {
+            isVisible = !isCoPProject;
+            break;
+        }
+        case "rfDesign":
         default:
         {
             isVisible = true;
             break;
         }
     }
-
-    // Hide all configs for coprocessor project
-    isVisible = isVisible && (inst.project !== "coprocessor");
 
     // Return whether config is hidden
     return(!isVisible);
@@ -507,22 +539,28 @@ function getSafeFreqSub1(inst)
  */
 function validate(inst, validation)
 {
-    // Validate dynamic configs
-    let validOptions = rfCommon.getFreqBandOptions(inst);
-    Common.validateDynamicEnum(inst, validation, "freqBand", validOptions);
+    if(inst.project !== "coprocessor")
+    {
+        // Validate dynamic configs
+        let validOptions = rfCommon.getFreqBandOptions(inst);
+        Common.validateDynamicEnum(inst, validation, "freqBand", validOptions);
 
-    validOptions = getFreqSub1Options(inst);
-    Common.validateDynamicEnum(inst, validation, "freqSub1", validOptions);
+        validOptions = getFreqSub1Options(inst);
+        Common.validateDynamicEnum(inst, validation, "freqSub1", validOptions);
 
-    validOptions = rfCommon.getPhyTypeOptions(inst);
-    Common.validateDynamicEnum(inst, validation, "phyType", validOptions);
+        validOptions = rfCommon.getPhyTypeOptions(inst);
+        Common.validateDynamicEnum(inst, validation, "phyType", validOptions);
+    }
 
     // Get the RF Design module to verify that RF Design configs match
     const rfDesign = system.modules["/ti/devices/radioconfig/rfdesign"].$static;
-    if(inst.rfDesign !== rfDesign.rfDesign)
+    const isLPSTKBoard = rfDesign.rfDesign.includes("LPSTK");
+    if((!isLPSTKBoard && inst.rfDesign !== rfDesign.rfDesign)
+       || (isLPSTKBoard && !inst.rfDesign.includes("CC1352R1")))
     {
-        validation.logError(`Must match ${system.getReference(rfDesign,
-            "rfDesign")} in the RF Design Module`, inst, "rfDesign");
+        validation.logError(`Must match Based On RF Design setting in the \
+            ${system.getReference(rfDesign, "rfDesign")} module`, inst,
+        "rfDesign");
     }
 }
 
@@ -539,46 +577,97 @@ function validate(inst, validation)
  * @param inst  - Module instance containing the config that changed
  * @returns dictionary - containing a single RF setting dependency module
  */
-function addRFSettingDependency(inst)
+function addRFSettingDependency(inst, selectedPhy)
 {
-    const boardPhySettings = rfCommon.getBoardPhySettings(inst);
-
-    // Get proprietary Sub-1 GHz RF defaults for the device being used
-    const propPhySettings = boardPhySettings.defaultPropPhyList;
-
-    // Get IEEE 2.4 GHz RF defaults for the device being used
-    const ieeePhySettings = boardPhySettings.defaultIEEEPhyList;
-
-    const phyType = rfCommon.getSafePhyType(inst);
-    const freqBand = rfCommon.getSafeFreqBand(inst);
-
-    // Find PHY object
-    const phyList = propPhySettings.concat(ieeePhySettings);
-    const selectedPhy = _.find(phyList,
-        (setting) => (setting.phyDropDownOption.name === phyType));
-
     // Get settings from selected phy
     const radioConfigArgs = _.cloneDeep(selectedPhy.args);
 
-    // Retrieve phy and phy group from rf_defaults files to get tx power
-    // configuration that needs to be set in the radio config module
-    const rfPhySettings = rfCommon.getPhyTypeGroupFromRFConfig(inst);
-    const rfPhyType = rfPhySettings.phyType;
-    const rfPhyGroup = rfPhySettings.phyGroup;
-    const txPower154Obj = powerScript.getRFTxPowerFrom154TxPower(inst, freqBand,
-        rfPhyType, rfPhyGroup);
+    const phyName = selectedPhy.phyDropDownOption.displayName;
+    const is24GPhy = phyName.includes("250 kbps");
 
-    // Set radio config tx power based on 15.4 tx power setting
-    radioConfigArgs[txPower154Obj.cfgName] = txPower154Obj.txPower;
+    radioConfigArgs.$name = "ti154stack_" + _.camelCase(phyName);
+    let radioConfigModName = "radioConfig";
 
-    // Set high PA in radio config if supported by board
-    if(Common.isHighPADevice())
+    // Set appropriate TX power settings within radio config module
+    if(inst.project !== "coprocessor")
     {
-        radioConfigArgs.highPA = txPower154Obj.highPA;
+        const freqBand = rfCommon.getSafeFreqBand(inst);
+
+        // Retrieve phy and phy group from rf_defaults files to get tx power
+        // configuration that needs to be set in the radio config module
+        const rfPhySettings = rfCommon.getPhyTypeGroupFromRFConfig(inst);
+        const rfPhyType = rfPhySettings.phyType;
+        const rfPhyGroup = rfPhySettings.phyGroup;
+        const txPower154Obj = powerScript.getRFTxPowerFrom154TxPower(inst,
+            freqBand, rfPhyType, rfPhyGroup);
+
+        // Set radio config tx power based on 15.4 tx power setting
+        radioConfigArgs[txPower154Obj.cfgName] = txPower154Obj.txPower;
+
+        // Set high PA in radio config if supported by board
+        if(Common.isHighPADevice())
+        {
+            radioConfigArgs.highPA = txPower154Obj.highPA;
+        }
+    }
+    else
+    {
+        radioConfigModName += _.camelCase(phyName);
+
+        /*
+         * Set TX power and high PA settings in radio config:
+         * 1) If force VDDR is set, then set radio config's TX power config
+         *    to the appropriate level in order for radio setup command to
+         *    update. Not applicable to 2.4G or 433MHz PHYs
+         * 2) Otherwise enable high PA if supported on current PHY
+         * 3) If high PA not supported on board for given PHY, use the default
+         *    TX power (0)
+         */
+        const currBoard = Common.getDeviceOrLaunchPadName(true, null, inst);
+
+        if(inst.forceVddr && _.has(selectedPhy.args, "phyType868"))
+        {
+            const rfPhyType = selectedPhy.args.phyType868;
+
+            // Get the command handler for this phy instance
+            const cmdHandler = CmdHandler.get(commonRadioConfig.PHY_PROP,
+                rfPhyType);
+            const freq = cmdHandler.getFrequency();
+
+            // Get drop down options of default PA, radio config TX power
+            // config
+            // Force VDDR CCFG setting only applicable to Sub-G
+            const txPowerOpts = powerScript.getTxPowerRFConfig(inst,
+                "freqBandSub1", rfPhyType,
+                commonRadioConfig.PHY_PROP).txPower;
+
+            // Find TX power level that requires Force VDDR setting
+            _.each(txPowerOpts, (txPowerOpt) =>
+            {
+                if(ParameterHandler.validateTxPower(txPowerOpt.name, freq,
+                    false))
+                {
+                    radioConfigArgs.txPower = txPowerOpt.name;
+                }
+            });
+        }
+
+        // High PA supported on sub-G on P1 board and on 2.4G on other
+        // P-boards
+        const is1352P1Board = (currBoard != null
+            && (currBoard.includes("1352P1")
+            || currBoard.includes("CC1352P7_1")));
+
+        if(Common.isHighPADevice())
+        {
+            radioConfigArgs.highPA = ((!is1352P1Board && is24GPhy)
+                || (is1352P1Board && !is24GPhy && !inst.forceVddr));
+        }
     }
 
     // Add 15.4 specific overrides for sub-G projects
-    if(inst.freqBand === "freqBandSub1")
+    if((inst.project === "coprocessor" && !is24GPhy)
+        || (inst.project !== "coprocessor" && inst.freqBand === "freqBandSub1"))
     {
         const overridesMacro = "TI_154_STACK_OVERRIDES";
         radioConfigArgs.codeExportConfig.stackOverride = "ti/ti154stack/"
@@ -587,10 +676,10 @@ function addRFSettingDependency(inst)
     }
 
     return({
-        name: "radioConfig",
-        displayName: selectedPhy.phyDropDownOption.displayName,
+        name: radioConfigModName,
+        displayName: phyName,
         moduleName: selectedPhy.moduleName,
-        description: "Radio configuration",
+        description: "Radio Configuration",
         readOnly: true,
         hidden: true,
         collapsed: true,
@@ -610,10 +699,40 @@ function moduleInstances(inst)
 {
     const dependencyModule = [];
 
+    // Determine PHYs to which to add radio config
+    const boardPhySettings = rfCommon.getBoardPhySettings(inst);
+
+    // Get proprietary Sub-1 GHz RF defaults for the device being used
+    const propPhySettings = boardPhySettings.defaultPropPhyList;
+
+    // Get IEEE 2.4 GHz RF defaults for the device being used
+    const ieeePhySettings = boardPhySettings.defaultIEEEPhyList;
+    let phyList = propPhySettings.concat(ieeePhySettings);
+
     if(inst.project !== "coprocessor")
     {
-        // Add radio config module associated with phy selected
-        dependencyModule.push(addRFSettingDependency(inst));
+        // Find PHY selected
+        const phyType = rfCommon.getSafePhyType(inst);
+
+        const selectedPhy = _.find(phyList,
+            (setting) => (setting.phyDropDownOption.name === phyType));
+
+        dependencyModule.push(addRFSettingDependency(inst, selectedPhy));
+    }
+    else
+    {
+        // Add CoP-only PHYs if applicable (e.g. 2.4G on P1 and P7_1)
+        const ieeePhySettingsCop = boardPhySettings.defaultIEEEPhyListCoP;
+        if(ieeePhySettingsCop)
+        {
+            phyList = phyList.concat(ieeePhySettingsCop);
+        }
+
+        // CoProcessor projects need all available PHYs
+        _.each(phyList, (selectedPhy) =>
+        {
+            dependencyModule.push(addRFSettingDependency(inst, selectedPhy));
+        });
     }
 
     return(dependencyModule);

@@ -336,9 +336,9 @@ extern uint32_t _sign_fnPtr;
 
 #ifndef __unix__
 
-#if defined(DeviceFamily_CC26X2)
+#if defined(DeviceFamily_CC26X2) || defined(DeviceFamily_CC26X2X7)
   #define OAD_IMG_ID_VAL                    {'C', 'C', '2', '6', 'x', '2', 'R', '1'}
-#elif defined (DeviceFamily_CC13X2)
+#elif defined (DeviceFamily_CC13X2) || defined (DeviceFamily_CC13X2X7)
   #define OAD_IMG_ID_VAL                    {'C', 'C', '1', '3', 'x', '2', 'R', '1'}
 #elif defined (DeviceFamily_CC26X0R2)
   #define OAD_IMG_ID_VAL                    {'O', 'A', 'D', ' ', 'I', 'M', 'G', ' '}

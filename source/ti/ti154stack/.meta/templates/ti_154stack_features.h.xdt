@@ -38,6 +38,9 @@
 
 const inst = system.modules["/ti/ti154stack/ti154stack"].$static;
 
+// Get common utility functions
+const Common = system.getScript("/ti/ti154stack/ti154stack_common.js");
+
 function getModeFeatureMacro(mode) {
     switch(mode) {
         case "beacon":
@@ -66,22 +69,35 @@ extern "C"
 {
 #endif
 
+% const isCoPProject = (inst.project === "coprocessor");
 % const isSecureEnabled = (inst.secureLevel !== "macSecureDisabled");
 % const isSecureCommEnabled = (inst.secureLevel === "macSecureAndCommissioning");
-% if(isSecureEnabled) {
-/* Builds the image with the mac layer security turned on */
+% if(isSecureEnabled || isCoPProject) {
+/* Builds the image with the MAC layer security turned on */
 #define FEATURE_MAC_SECURITY
 %}
-% if(isSecureCommEnabled) {
+% if(isSecureCommEnabled && !isCoPProject) {
 
 /* Builds the image with the secure commissioning turned on */
 #define FEATURE_SECURE_COMMISSIONING
 %}
 
-/* Builds the image with `inst.mode` mode of operation */
+% if(isCoPProject)
+%{
+/* CoProcessor image should contain all modes of operation */
+% if(Common.isSub1GHzDevice()) {
+#define FEATURE_FREQ_HOP_MODE
+% }
+#define FEATURE_BEACON_MODE
+#define FEATURE_NON_BEACON_MODE
+%}
+%else
+%{
+/* Builds the image with `_.toLower(_.startCase(inst.mode))` mode of operation */
 #define `getModeFeatureMacro(inst.mode)`
+%}
 
-% if(inst.project.includes("collector")) {
+% if(inst.project.includes("collector") || isCoPProject) {
 /*! Builds the image with the full function device */
 #define FEATURE_FULL_FUNCTION_DEVICE
 % }

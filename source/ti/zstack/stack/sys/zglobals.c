@@ -51,6 +51,7 @@
 #include "ti_zstack_config.h"
 #include "nwk_util.h"
 #include "aps_mede.h"
+#include "aps_groups.h"
 #include "ssp.h"
 
 #if !defined (DISABLE_GREENPOWER_BASIC_PROXY) && (ZG_BUILD_RTR_TYPE)
@@ -1089,6 +1090,41 @@ static void zgUpgradeNVDriver( void )
         }
       }
     }
+#endif
+
+#if !defined ( APS_NO_GROUPS )
+  apsGroupNVItem_t item;
+  nvGroupsHdr_t hdr;
+  ZStatus_t status;
+  uint16_t size;
+  bool deleteLegacy = true;
+
+  if ( osal_nv_read( ZCD_NV_LEGACY_GROUP_TABLE, 0, sizeof(nvGroupsHdr_t), &hdr ) == ZSuccess )
+  {
+    // Read in the device list
+    for ( i = 0; i < hdr.numRecs; i++ )
+    {
+      if ( osal_nv_read( ZCD_NV_LEGACY_GROUP_TABLE,
+                (uint16_t)(sizeof(nvGroupsHdr_t) + (i * sizeof ( apsGroupNVItem_t ))),
+                                  sizeof ( apsGroupNVItem_t ), &item ) == ZSUCCESS )
+      {
+        // Add the group and move to new table
+        status = aps_AddGroup( item.endpoint, &(item.group), true );
+        if( status != SUCCESS && status != ZApsDuplicateEntry)
+        {
+          // If failed to add entry, do not delete old table
+          deleteLegacy = false;
+        }
+      }
+    }
+    if ( true == deleteLegacy )
+    {
+      size = (uint16_t)((sizeof ( nvGroupsHdr_t ))
+                  + ( sizeof( apsGroupNVItem_t ) * gAPS_MAX_GROUPS ));
+      // Delete the old table
+      osal_nv_delete(ZCD_NV_LEGACY_GROUP_TABLE, size );
+    }
+   }
 #endif
 
     upgradeComplete = TRUE;

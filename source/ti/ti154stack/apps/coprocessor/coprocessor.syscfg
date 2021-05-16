@@ -168,5 +168,11 @@ for(var setting in rfDesignSettings)
 
 /* ======== TI-15.4 Stack ======== */
 var TI154Stack = scripting.addModule("/ti/ti154stack/ti154stack");
+
+if(rfDesignSettings.rfDesign !== undefined)
+{
+    TI154Stack.rfDesign = rfDesignSettings.rfDesign;
+}
+
 TI154Stack.project = "coprocessor";
 TI154Stack.lockProject = true;

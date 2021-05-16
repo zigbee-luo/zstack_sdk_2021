@@ -302,7 +302,7 @@ extern macScan_t macScan;
 extern macCfg_t macCfg;
 
 /* Crypto driver handle */
-#if !defined(DeviceFamily_CC13X2) && !defined(DeviceFamily_CC26X2)
+#if !defined(DeviceFamily_CC13X2) && !defined(DeviceFamily_CC26X2) && !defined(DeviceFamily_CC13X2X7) && !defined(DeviceFamily_CC26X2X7) && !defined(DeviceFamily_CC13X1) && !defined(DeviceFamily_CC26X1)
 extern CryptoCC26XX_Handle Crypto_handle;
 #else
 extern AESCCM_Handle AESCCM_handle;
@@ -775,7 +775,7 @@ const uint32 HMAC_ROM_Flash_JT[] =
 #endif
    (uint32)&macCfg,                                      //ROM_HMAC_JT_OFFSET[64]
 #if defined (FEATURE_MAC_SECURITY)
-#if !defined(DeviceFamily_CC13X2) && !defined(DeviceFamily_CC26X2)
+#if !defined(DeviceFamily_CC13X2) && !defined(DeviceFamily_CC26X2) && !defined(DeviceFamily_CC13X2X7) && !defined(DeviceFamily_CC26X2X7) && !defined(DeviceFamily_CC13X1) && !defined(DeviceFamily_CC26X1)
    (uint32)&Crypto_handle,                               //ROM_HMAC_JT_OFFSET[65]
 #else
    (uint32)&AESCCM_handle,                               //ROM_HMAC_JT_OFFSET[65]

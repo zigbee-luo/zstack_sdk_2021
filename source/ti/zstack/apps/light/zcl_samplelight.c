@@ -1994,7 +1994,7 @@ static void zclSampleLight_MoveBasedOnRate( uint8_t newLevel, uint32_t rate )
  */
 static void zclSampleLight_MoveBasedOnTime( uint8_t newLevel, uint16_t time )
 {
-  uint16_t diff;
+  uint32_t diff;
 
   // determine rate (in units) based on difference and time
   diff = zclSampleLight_TimeRateHelper( newLevel );

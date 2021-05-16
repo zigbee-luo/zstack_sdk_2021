@@ -79,6 +79,7 @@ const commonRadioConfig = system.getScript("/ti/devices/radioconfig/"
 const commonSlLr5KbpsSettings = {
     moduleName: "/ti/devices/radioconfig/settings/prop",
     args: {
+        txPower: "0",
         codeExportConfig: {
             symGenMethod: "Custom",
             useConst: true,
@@ -119,6 +120,7 @@ const commonSlLr5KbpsSettings = {
 const common2Gfsk50KbpsSettings = {
     moduleName: "/ti/devices/radioconfig/settings/prop",
     args: {
+        txPower: "0",
         codeExportConfig: {
             symGenMethod: "Custom",
             useConst: true,
@@ -159,6 +161,7 @@ const common2Gfsk50KbpsSettings = {
 const common2Gfsk200KbpsSettings = {
     moduleName: "/ti/devices/radioconfig/settings/prop",
     args: {
+        txPower: "0",
         codeExportConfig: {
             symGenMethod: "Custom",
             useConst: true,
@@ -226,6 +229,7 @@ const commonIEEESettings = {
     moduleName: "/ti/devices/radioconfig/settings/ieee_15_4",
     args: {
         phyType: "ieee154",
+        txPower: "0",
         codeExportConfig: {
             symGenMethod: "Custom",
             useConst: true,
@@ -388,6 +392,21 @@ function getBoardPhySettings(inst)
                 + "CC1352P_2_LAUNCHXL_rf_defaults.js");
         }
     }
+    else if(inst !== null && system.deviceData.deviceId === "CC1352P7RGZ")
+    {
+        // Get the RF Design configurable
+        const rfDesign = inst.rfDesign;
+        if(rfDesign === "LP_CC1352P7-1")
+        {
+            phySettings = system.getScript("/ti/ti154stack/rf_config/"
+                + "LP_CC1352P7_1_rf_defaults.js");
+        }
+        else if(rfDesign === "LP_CC1352P7-4")
+        {
+            phySettings = system.getScript("/ti/ti154stack/rf_config/"
+                + "LP_CC1352P7_4_rf_defaults.js");
+        }
+    }
     else
     {
         // Initialize with launchpad mapped from device
@@ -416,12 +435,13 @@ function getPhyTypeGroupFromRFConfig(inst)
     let allPhySettings;
 
     const localPhyType = getSafePhyType(inst);
+    const freqBand = getSafeFreqBand(inst);
 
     // Possible phyTypeXXX properties in the phy settings
     const phyTypes = ["phyType868", "phyType433", "phyType"];
 
     // Set phy group based on frequency selected and supported
-    if(inst.freqBand === "freqBandSub1"
+    if((freqBand === "freqBandSub1" && !localPhyType.includes("IEEE"))
         || (Common.isSub1GHzDevice() && !Common.is24GHzDevice(inst)))
     {
         // Get proprietary Sub-1 GHz RF defaults for the device being used
