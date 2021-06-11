@@ -58,6 +58,9 @@
 #define BDBREPORTING_SUCCESS 0
 #define BDBREPORTING_INVALIDINDEX 0xFF
 
+#define BDBREPORTING_DIRECRION_SEVER   ZCL_FRAME_CLIENT_SERVER_DIR // fixed by luoyiming 2021-05-31
+#define BDBREPORTING_DIRECRION_CLIENT  ZCL_FRAME_SERVER_CLIENT_DIR // fixed by luoyiming 2021-05-31
+
 /*********************************************************************
  * TYPEDEFS
  */

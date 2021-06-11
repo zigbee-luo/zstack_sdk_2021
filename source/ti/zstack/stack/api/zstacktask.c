@@ -1891,6 +1891,17 @@ static void zsProcessZDOMsgs( zdoIncomingMsg_t *inMsg )
 
         ZDO_ParseSimpleDescRsp( inMsg, &simpleRsp );
         sendSimpleDescRsp( inMsg->srcAddr.addr.shortAddr, &simpleRsp );
+
+        // free In cluster list, fixed by luoyiming 2021-05-20
+        if( simpleRsp.simpleDesc.pAppInClusterList )
+        {
+          OsalPort_free( simpleRsp.simpleDesc.pAppInClusterList );
+        }
+        // free Out cluster list, fixed by luoyiming 2021-05-20
+        if( simpleRsp.simpleDesc.pAppOutClusterList )
+        {
+          OsalPort_free( simpleRsp.simpleDesc.pAppOutClusterList );
+        }
       }
       break;
 #endif

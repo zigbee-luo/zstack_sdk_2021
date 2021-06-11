@@ -1057,6 +1057,7 @@ static uint8_t bdb_clusterEndpointArrayAdd( uint8_t endpoint, uint16_t cluster, 
   bdb_reportingClusterEndpointArray[bdb_reportingClusterEndpointArrayCount].endpoint = endpoint;
   bdb_reportingClusterEndpointArray[bdb_reportingClusterEndpointArrayCount].cluster = cluster;
   bdb_reportingClusterEndpointArray[bdb_reportingClusterEndpointArrayCount].manuCode = manuCode;  //fixed by luoyiming 2019-10-21
+  bdb_reportingClusterEndpointArray[bdb_reportingClusterEndpointArrayCount].direction = direction; //fixed by luoyiming 2021-05-31
 
   bdb_reportingClusterEndpointArray[bdb_reportingClusterEndpointArrayCount].consolidatedMinReportInt = consolidatedMinReportInt;
   bdb_reportingClusterEndpointArray[bdb_reportingClusterEndpointArrayCount].consolidatedMaxReportInt = consolidatedMaxReportInt;
@@ -1118,6 +1119,7 @@ static void bdb_clusterEndpointArrayMoveTo( uint8_t indexSrc, uint8_t indexDest 
 {
   bdb_reportingClusterEndpointArray[indexSrc].cluster = bdb_reportingClusterEndpointArray[indexDest].cluster;
   bdb_reportingClusterEndpointArray[indexSrc].manuCode = bdb_reportingClusterEndpointArray[indexDest].manuCode; //added by luoyiming, 2019-10-21
+  bdb_reportingClusterEndpointArray[indexSrc].direction = bdb_reportingClusterEndpointArray[indexDest].direction; //added by luoyiming, 2021-05-31
   bdb_reportingClusterEndpointArray[indexSrc].endpoint = bdb_reportingClusterEndpointArray[indexDest].endpoint;
   bdb_reportingClusterEndpointArray[indexSrc].consolidatedMaxReportInt = bdb_reportingClusterEndpointArray[indexDest].consolidatedMaxReportInt;
   bdb_reportingClusterEndpointArray[indexSrc].consolidatedMinReportInt = bdb_reportingClusterEndpointArray[indexDest].consolidatedMinReportInt;
@@ -1360,7 +1362,8 @@ static uint8_t bdb_repAttrCfgRecordsArrayAdd( uint8_t endpoint, uint16_t cluster
 
   bdb_reportingAttrCfgRecordsArray[bdb_reportingAttrCfgRecordsArrayCount].endpoint = endpoint;
   bdb_reportingAttrCfgRecordsArray[bdb_reportingAttrCfgRecordsArrayCount].cluster = cluster;
-  bdb_reportingAttrCfgRecordsArray[bdb_reportingAttrCfgRecordsArrayCount].manuCode = manuCode; //add by luoyiming, 2019-10-21
+  bdb_reportingAttrCfgRecordsArray[bdb_reportingAttrCfgRecordsArrayCount].manuCode = manuCode; // add by luoyiming, 2019-10-21
+  bdb_reportingAttrCfgRecordsArray[bdb_reportingAttrCfgRecordsArrayCount].direction = direction; // add by luoyiming, 2021-05-31
   bdb_reportingAttrCfgRecordsArray[bdb_reportingAttrCfgRecordsArrayCount].attrID = attrID;
   bdb_reportingAttrCfgRecordsArray[bdb_reportingAttrCfgRecordsArrayCount].minReportInt = minReportInt;
   bdb_reportingAttrCfgRecordsArray[bdb_reportingAttrCfgRecordsArrayCount].maxReportInt = maxReportInt;
