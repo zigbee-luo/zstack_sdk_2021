@@ -2892,7 +2892,7 @@ ZStatus_t ZDO_JoinIndicationCB(uint16_t ShortAddress, uint8_t *ExtendedAddress,
         joinInd.capabilities = CapabilityFlags;
         joinInd.type = type;
 
-        zdoCBFunc[ZDO_JOIN_IND_CBID]( (void*)joinInd );
+        zdoCBFunc[ZDO_JOIN_IND_CBID]( (void*)&joinInd );
       }
     }
 
