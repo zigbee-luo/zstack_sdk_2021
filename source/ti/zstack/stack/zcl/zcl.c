@@ -2850,12 +2850,14 @@ static zclCmdRecsList_t *zclFindCmdRecsList( uint8_t endpoint )
  * @param   endpoint - Application's endpoint
  * @param   clusterID - cluster ID
  * @param   manuCode - manufacturer code, add by luoyiming 2019-10-21
- * @param   attrId - attribute looking for
- * @param   pAttr - attribute record to be returned
+ * @param   cmdID - command looking for
+ * @param   flag  - direction flag matching, add by luoyiming 2021-06-23
+ * @param   pCmd - command record to be returned
  *
  * @return  TRUE if record found. FALSE, otherwise.
  */
-uint8_t zclFindCmdRecEx( uint8_t endpoint, uint16_t clusterID, uint16_t manuCode, uint8_t cmdID, zclCommandRec_t *pCmd )
+uint8_t zclFindCmdRecEx( uint8_t endpoint, uint16_t clusterID, uint16_t manuCode,
+                         uint8_t cmdID, uint8_t flag, zclCommandRec_t *pCmd )
 {
   uint8_t i;
   zclCmdRecsList_t *pRec = zclFindCmdRecsList( endpoint );
@@ -2872,7 +2874,11 @@ uint8_t zclFindCmdRecEx( uint8_t endpoint, uint16_t clusterID, uint16_t manuCode
     for ( i = 0; i < pRec->numCommands; i++ )
     {
       // match manufacturer command at first, luoyiming 2020-01-08
-      if ( ( pRec->pCmdRecs[i].flag & CMD_FLAG_MANUCODE ) && matchManuCode == FALSE )
+      if ( ( pRec->pCmdRecs[i].flag & CMD_FLAG_MANUCODE ) && ( matchManuCode == FALSE ) )
+      {
+        continue;
+      }
+      if( (flag != 0) && ( (pRec->pCmdRecs[i].flag & flag) == 0 ) ) // match direction flag, luoyiming 2021-06-23
       {
         continue;
       }
@@ -3851,7 +3857,7 @@ static ZStatus_t zclWriteAttrData( uint8_t endpoint, afAddrType_t *srcAddr,
     status = zclAuthorizeWrite( endpoint, srcAddr, pAttr );
     if ( status == ZCL_STATUS_SUCCESS )
     {
-      if ( ( zcl_ValidateAttrDataCB == NULL ) || zcl_ValidateAttrDataCB( pAttr, pWriteRec ) )
+      if ( ( zcl_ValidateAttrDataCB == NULL ) || zcl_ValidateAttrDataCB( endpoint, pAttr, pWriteRec ) )
       {
         // Write the attribute value
         uint16_t len = zclGetAttrDataLength( pAttr->attr.dataType, pWriteRec->attrData );

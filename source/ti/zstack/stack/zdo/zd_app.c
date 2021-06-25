@@ -181,10 +181,6 @@ uint8_t FrameCounterUpdated = FALSE;
 // Device Announce Failure callback, add by luoyiming 2021-05-08
 void (*pZdoAnnounceNewAddrFailureCB)(uint8_t status) = NULL;
 
-// Device Join Indication callback notify to higher layer, add by luoyiming 2021-05-15
-void (*pfnZdoJoinIndCB)( uint16_t ShortAddress, uint8_t *ExtendedAddress,
-                         uint8_t CapabilityFlags, uint8_t type ) = NULL;
-
 /*********************************************************************
  * EXTERNAL VARIABLES
  */
@@ -2886,9 +2882,17 @@ ZStatus_t ZDO_JoinIndicationCB(uint16_t ShortAddress, uint8_t *ExtendedAddress,
       }
 
       // Notify to higher layer by callback, add by luoyiming 2021-05-15.
-      if( pfnZdoJoinIndCB != NULL )
+      if( zdoCBFunc[ZDO_JOIN_IND_CBID] != NULL )
       {
-        pfnZdoJoinIndCB( ShortAddress, ExtendedAddress, CapabilityFlags, type );
+        // Change this callback to be trigger from zdoCBFunc.
+        zdoJoinInd_t joinInd;
+
+        joinInd.nwkAddr = ShortAddress;
+        joinInd.extAddr = ExtendedAddress;
+        joinInd.capabilities = CapabilityFlags;
+        joinInd.type = type;
+
+        zdoCBFunc[ZDO_JOIN_IND_CBID]( (void*)joinInd );
       }
     }
 

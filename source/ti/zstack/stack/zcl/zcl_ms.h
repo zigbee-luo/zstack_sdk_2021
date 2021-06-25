@@ -351,6 +351,8 @@ typedef struct
   */
 extern ZStatus_t zclMS_RegisterCmdCallbacks( uint8_t endpoint, zclMS_AppCallbacks_t *callbacks );
 
+extern void zclMS_RegisterUnsupportCallback( ZStatus_t (*callback)(zclIncoming_t*pInMsg) );
+
 #endif // ZCL_MS
 
 #ifdef __cplusplus

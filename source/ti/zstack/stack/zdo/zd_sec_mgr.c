@@ -140,8 +140,8 @@ extern void   ZDApp_ResetTimerCancel( void );
 //
 ZStatus_t (*pZDSecMgrDeviceValidateCallback)( uint16_t nwkAddr, uint8_t* extAddr, uint16_t parentAddr ) = NULL;
 
-//set Device Leave Notify Callback, add by luoyiming 2019-05-16
-void (*pZDSecMgrDeviceLeaveNotifyCallback)( uint16_t nwkAddr, uint8_t* extAddr, uint16_t parentAddr ) = NULL;
+// set receives Device-Leave-Update Callback, change name by luoyiming in 2021-06-25
+void (*pZDSecMgrDeviceLeaveUpdateCallback)( uint16_t nwkAddr, uint8_t* extAddr, uint16_t parentAddr ) = NULL;
 
 uint8_t ZDSecMgrTCExtAddr[Z_EXTADDR_LEN]=
   { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
@@ -2013,9 +2013,9 @@ void ZDSecMgrUpdateDeviceInd( ZDO_UpdateDeviceInd_t* ind )
       }
 #endif
     // execute devie leave notify callback, add by luoyiming
-    if( NULL != pZDSecMgrDeviceLeaveNotifyCallback )
+    if( NULL != pZDSecMgrDeviceLeaveUpdateCallback )
     {
-      pZDSecMgrDeviceLeaveNotifyCallback( device.nwkAddr, device.extAddr, device.parentAddr );
+      pZDSecMgrDeviceLeaveUpdateCallback( device.nwkAddr, device.extAddr, device.parentAddr );
     }
   }
 }

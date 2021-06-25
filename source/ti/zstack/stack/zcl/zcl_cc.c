@@ -273,16 +273,21 @@ static ZStatus_t zclCC_HdlIncoming(  zclIncoming_t *pInMsg )
     {
       if ( zcl_matchClusterId( pInMsg ) ) //match cluster ID support.
       {
-#ifdef ZCL_DISCOVER
+#ifdef  ZCL_CMD_MATCH
         zclCommandRec_t cmdRec;
-        if( TRUE == zclFindCmdRec( pInMsg->msg->endPoint, pInMsg->msg->clusterId,
-                                  pInMsg->hdr.commandID, &cmdRec ) )
+        uint8_t matchFlag = 0;
+        if( zcl_ServerCmd(pInMsg->hdr.fc.direction) )
         {
-          if( ( zcl_ServerCmd(pInMsg->hdr.fc.direction) && (cmdRec.flag & CMD_DIR_SERVER_RECEIVED) ) ||
-             ( zcl_ClientCmd(pInMsg->hdr.fc.direction) && (cmdRec.flag & CMD_DIR_CLIENT_RECEIVED) ) )
-          {
-            stat = zclCC_HdlInSpecificCommands( pInMsg );
-          }
+          matchFlag = CMD_DIR_SERVER_RECEIVED;
+        }
+        else
+        {
+          matchFlag = CMD_DIR_CLIENT_RECEIVED;
+        }
+        if( TRUE == zclFindCmdRec( pInMsg->msg->endPoint, pInMsg->msg->clusterId,
+                                   pInMsg->hdr.commandID, matchFlag, &cmdRec ) )
+        {
+          stat = zclCC_HdlInSpecificCommands( pInMsg );
         }
 #else
         stat = zclCC_HdlInSpecificCommands( pInMsg );

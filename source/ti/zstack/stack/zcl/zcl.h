@@ -1144,7 +1144,7 @@ typedef struct
  *
  * @return  uint8_t
  */
-typedef uint8_t (*zclValidateAttrData_t)( zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo );
+typedef uint8_t (*zclValidateAttrData_t)( uint8_t endpoint, zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo );
 
 /*!
  *
@@ -2010,8 +2010,9 @@ extern void *zclParseInDiscAttrsCmd( zclParseCmd_t *pCmd );
  *
  * @return  TRUE if record found. FALSE, otherwise.
  */
-#define zclFindCmdRec( ep, cId, cmd, rec )  zclFindCmdRecEx( ep, cId, 0, cmd, rec )
-extern uint8_t zclFindCmdRecEx( uint8_t endpoint, uint16_t clusterID, uint16_t manuCode, uint8_t cmdID, zclCommandRec_t *pCmd );
+#define zclFindCmdRec( ep, cId, cmd, flag, rec )  zclFindCmdRecEx( ep, cId, 0, cmd, flag, rec )
+extern uint8_t zclFindCmdRecEx( uint8_t endpoint, uint16_t clusterID, uint16_t manuCode,
+                                uint8_t cmdID, uint8_t flag, zclCommandRec_t *pCmd );
 #endif // ZCL_DISCOVER
 
 /*!

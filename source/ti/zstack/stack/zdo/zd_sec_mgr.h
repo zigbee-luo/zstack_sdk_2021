@@ -110,8 +110,8 @@ uint8_t               extendedPanID[Z_EXTADDR_LEN];   //Extended pan Id associat
 //
 extern ZStatus_t (*pZDSecMgrDeviceValidateCallback)( uint16_t nwkAddr, uint8_t* extAddr, uint16_t parentAddr );
 
-//set Device Leave Notify Callback, add by luoyiming 2019-05-16
-extern void (*pZDSecMgrDeviceLeaveNotifyCallback)( uint16_t nwkAddr, uint8_t* extAddr, uint16_t parentAddr );
+// set receives Device-Leave-Update Callback, change name by luoyiming in 2021-06-25
+extern void (*pZDSecMgrDeviceLeaveUpdateCallback)( uint16_t nwkAddr, uint8_t* extAddr, uint16_t parentAddr );
 
 /******************************************************************************
  * PUBLIC FUNCTIONS

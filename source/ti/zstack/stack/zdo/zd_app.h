@@ -314,6 +314,7 @@ enum
   ZDO_LEAVE_IND_CBID,
   ZDO_PERMIT_JOIN_CBID,
   ZDO_TC_DEVICE_CBID,
+  ZDO_JOIN_IND_CBID,            // added by luoyiming 2021-06-25
   MAX_ZDO_CB_FUNC               // Must be at the bottom of the list
 };
 
@@ -383,6 +384,15 @@ typedef struct
 } ZDO_PendingBindReq_t;
 #endif
 
+// join indication callback, added by luoyimign 2021-06-25
+typedef struct
+{
+  uint16_t nwkAddr;
+  uint8_t *extAddr;
+  uint8_t  capabilities;
+  uint8_t  type;
+} zdoJoinInd_t;
+
 /*********************************************************************
  * GLOBAL VARIABLES
  */
@@ -407,8 +417,6 @@ extern uint8_t ZDO_UseExtendedPANID[Z_EXTADDR_LEN];
 extern uint32_t runtimeChannel;
 
 extern void (*pZdoAnnouceNewAddrFailureCB)(uint8_t status);
-
-extern void (*pfnZdoJoinIndCB)( uint16_t ShortAddress, uint8_t *ExtendedAddress, uint8_t CapabilityFlags, uint8_t type );
 
 /*********************************************************************
  * FUNCTIONS - API

@@ -81,6 +81,7 @@ typedef struct zclMSCBRec
  */
 static zclMSCBRec_t *zclMSCBs = (zclMSCBRec_t *)NULL;
 static uint8_t zclMSPluginRegisted = FALSE;
+static ZStatus_t (*zclMSUnsupportCallback)(zclIncoming_t* pInMsg) = NULL;
 
 /*********************************************************************
  * LOCAL FUNCTIONS
@@ -149,6 +150,29 @@ ZStatus_t zclMS_RegisterCmdCallbacks( uint8_t endpoint, zclMS_AppCallbacks_t *ca
 }
 
 /*********************************************************************
+ * @fn      zclMS_RegisterUnsupportCallback
+ *
+ * @brief   Register an callback for unsupport endpoint
+ *
+ * @param   callback - pointer to the callback record.
+ *
+ * @return  NONE
+ */
+void zclMS_RegisterUnsupportCallback( ZStatus_t (*callback)(zclIncoming_t*pInMsg) )
+{
+  // Register as a ZCL Plugin
+  if ( !zclMSPluginRegisted )
+  {
+    zcl_registerPlugin( ZCL_CLUSTER_ID_GENERAL_BASIC,
+                        ZCL_CLUSTER_ID_GENERAL_MULTISTATE_VALUE_BASIC,
+                        zclMS_HdlIncoming );
+    zclMSPluginRegisted = TRUE;
+  }
+
+  zclMSUnsupportCallback = callback;
+}
+
+/*********************************************************************
  * @fn      zclMS_FindCallbacks
  *
  * @brief   Find the callbacks for an endpoint
@@ -196,12 +220,46 @@ static ZStatus_t zclMS_HdlIncoming( zclIncoming_t *pInMsg )
     // Is this a manufacturer specific command?
     if ( pInMsg->hdr.fc.manuSpecific == 0 )
     {
-      stat = zclMS_HdlInSpecificCommands( pInMsg );
+      if ( zcl_matchClusterId( pInMsg ) ) //match cluster ID support.
+      {
+#ifdef  ZCL_CMD_MATCH
+        zclCommandRec_t cmdRec;
+        uint8_t matchFlag = 0;
+        stat = ZFailure;
+        if( zcl_ServerCmd(pInMsg->hdr.fc.direction) )
+        {
+          matchFlag = CMD_DIR_SERVER_RECEIVED;
+        }
+        else
+        {
+          matchFlag = CMD_DIR_CLIENT_RECEIVED;
+        }
+        if( TRUE == zclFindCmdRec( pInMsg->msg->endPoint, pInMsg->msg->clusterId,
+                                   pInMsg->hdr.commandID, matchFlag, &cmdRec ) )
+        {
+          stat = zclMS_HdlInSpecificCommands( pInMsg );
+        }
+#else
+        stat = zclMS_HdlInSpecificCommands( pInMsg );
+#endif
+      }
+      else
+      {
+        stat = ZFailure;
+      }
     }
     else
     {
       // We don't support any manufacturer specific command -- ignore it.
       stat = ZFailure;
+    }
+    // execute unsupported command, luoyiming fix at 2021-06-17
+    if( stat == ZFailure)
+    {
+      if( zclMSUnsupportCallback )
+      {
+        stat = zclMSUnsupportCallback( pInMsg );
+      }
     }
   }
   else
