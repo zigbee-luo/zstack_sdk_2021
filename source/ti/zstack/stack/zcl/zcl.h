@@ -1144,7 +1144,7 @@ typedef struct
  *
  * @return  uint8_t
  */
-typedef uint8_t (*zclValidateAttrData_t)( zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo );
+typedef uint8_t (*zclValidateAttrData_t)( uint8_t endpoint, zclAttrRec_t *pAttr, zclWriteRec_t *pAttrInfo );
 
 /*!
  *

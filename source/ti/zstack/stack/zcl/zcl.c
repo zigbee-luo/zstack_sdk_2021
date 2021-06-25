@@ -3851,7 +3851,7 @@ static ZStatus_t zclWriteAttrData( uint8_t endpoint, afAddrType_t *srcAddr,
     status = zclAuthorizeWrite( endpoint, srcAddr, pAttr );
     if ( status == ZCL_STATUS_SUCCESS )
     {
-      if ( ( zcl_ValidateAttrDataCB == NULL ) || zcl_ValidateAttrDataCB( pAttr, pWriteRec ) )
+      if ( ( zcl_ValidateAttrDataCB == NULL ) || zcl_ValidateAttrDataCB( endpoint, pAttr, pWriteRec ) )
       {
         // Write the attribute value
         uint16_t len = zclGetAttrDataLength( pAttr->attr.dataType, pWriteRec->attrData );
